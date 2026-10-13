@@ -29,6 +29,7 @@ const BINGO=['Cowboy hat in the wild','Someone says \u201cy\u2019all\u201d','\u2
 const bingoLines=b=>{const L=[];for(let r=0;r<5;r++){L.push([0,1,2,3,4].map(c=>r*5+c));L.push([0,1,2,3,4].map(c=>c*5+r))}L.push([0,6,12,18,24],[4,8,12,16,20]);return L.filter(l=>l.every(i=>i===12||b[i])).length};
 const cnt=o=>Object.values(o||{}).filter(Boolean).length;
 const QUESTS=[
+ {id:'profile',label:'Fill in your driver card (driver, team and who you are)',max:30,to:'home.html#profilecard',calc:p=>{const d=profiles[p]||{};return (d.fav?5:0)+(d.team?5:0)+(((d.bio||'').trim().length>=15)?20:0)}},
  {id:'travel',label:'Add your flight or bus details',max:10,to:'crew.html',calc:p=>(legs[p+'-in']||legs[p+'-out'])?10:0},
  {id:'cocktail',label:'Pick your cocktails',max:10,to:'cocktails.html',calc:p=>cocktails[p]?10:0},
  {id:'pack',label:'Check off your pack list',max:PACKITEMS.length+5,to:'info.html',calc:p=>{const n=cnt((prog[p]||{}).packed);return n+(n>=PACKITEMS.length?5:0)}},
@@ -39,7 +40,6 @@ const QUESTS=[
  {id:'songs',label:'Add songs to the playlist',max:15,to:'play.html',calc:p=>Math.min(3,Object.values(songs).filter(s=>s.by===p).length)*5},
  {id:'photos',label:'Post your 2 best photos',max:20,to:'photos.html',calc:p=>[1,2].filter(s=>photos[p+'-'+s]).length*10},
  {id:'note',label:'Leave a note for the host',max:5,to:'home.html',calc:p=>Object.values(notes).some(n=>n.by===p)?5:0},
- {id:'profile',label:'Fill in your driver card (driver, team and who you are)',max:30,to:'home.html',calc:p=>{const d=profiles[p]||{};return (d.fav?5:0)+(d.team?5:0)+(((d.bio||'').trim().length>=15)?20:0)}},
  {id:'phone',label:'Add your number to the group directory',max:5,to:'directory.html',calc:p=>(phones[p]&&(phones[p].phone||'').replace(/\D/g,'').length>=7)?5:0},
  {id:'journal',label:'Write your trip page',max:25,to:'after.html',calc:p=>(jr[p]&&jr[p].ts)?25:0}];
 function score(p){const rows=QUESTS.map(q=>({id:q.id,label:q.label,to:q.to,max:q.max,pts:Math.min(q.max,q.calc(p))}));const bn=(bonus[p]||{}).pts||0,hl=(highlights[p]||{}).pts||0;return{rows,bonus:bn,hl,total:rows.reduce((a,r)=>a+r.pts,0)+bn+hl}}
@@ -86,10 +86,10 @@ const nonEmpty=o=>Object.fromEntries(Object.entries(o||{}).filter(e=>e[1]));
 const DAYS=[{d:'2026-10-22',s:'Thu',n:22},{d:'2026-10-23',s:'Fri',n:23},{d:'2026-10-24',s:'Sat',n:24},{d:'2026-10-25',s:'Sun',n:25},{d:'2026-10-26',s:'Mon',n:26},{d:'2026-10-27',s:'Tue',n:27}];
 const GLANCE={
  '2026-10-22':['Warm-up','A quiet night at home.'],
- '2026-10-23':['BBQ, the F1 fan hub, Maroon 5','Terry Black’s, the Mercedes fan hub, then COTA for dinner and the concert.'],
- '2026-10-24':['Lunch, qualifying, Post Malone','Home lunch, then COTA for qualifying and the show. Cocktails at home after.'],
+ '2026-10-23':['BBQ, the F1 fan hub, Maroon 5','Terry Black’s, the Mercedes fan hub, Hetvi arrives, COTA for the concert, cocktails after.'],
+ '2026-10-24':['Lunch, qualifying, Post Malone','Home lunch at 11:30, COTA from 1 pm for qualifying and the show, cocktail night at home after.'],
  '2026-10-25':['Race day','Be at COTA by 7:15 am for a good spot on the Turn 3–4 hill, race at 3 pm, Powder Room cocktails at night.'],
- '2026-10-26':['Goodbyes and The Oasis','Hetvi and Ambika head home. Early dinner at The Oasis.'],
+ '2026-10-26':['Goodbyes and The Oasis','Hetvi flies home, Ambika heads to Dallas for her flight, early dinner at The Oasis.'],
  '2026-10-27':['Back to work','Everyone is home.']};
 // [date,time,title,note,who,tag]
 const S=(d,t,title,note,who,tag)=>({d:'2026-10-'+d,t,title,note:note||'',who:who==='all'?PID.slice():[...who].map(x=>SH[x]),tag:tag||'cota'});
@@ -99,12 +99,16 @@ S(23,'09:30','Late breakfast at home','','ct','food'),
 S(23,'10:30','Optional: look for a cowboy hat','Only if you want one. Everyone buys their own, since colours and sizes are personal.','ct','fun'),
 S(23,'11:45','Lunch at Terry Black’s BBQ','1003 Barton Springs Rd. Opens at 11, so expect a line by noon.','ct','food'),
 S(23,'13:15','Mercedes F1 Fan Hub','400 Congress Ave. Free, Oct 22–25. Opening hours are not published.','ct','tbd'),
+S(23,'15:45','Pick up Hetvi at the airport','Her flight lands around 4 pm.','cth','travel'),
 S(23,'17:30','Head to COTA for dinner and a look around','Parking lots open 8 am, gates 9 am.','cth','cota'),
 S(23,'18:30','Dinner at COTA','About $25–30 each. Look for a veg stand.','cth','food'),
 S(23,'20:00','Maroon 5 live (time TBA)','Set time is not published yet.','cth','cota'),
-S(24,'09:30','Slow morning, breakfast at home','','cth','food'),
-S(24,'13:00','Lunch at Patne’s place','Tell Patne what you would like on the Food & Texas page.','ctha','food'),
-S(24,'15:00','Head to COTA, settle on the Turn 3–4 hill','Qualifying is at 4 pm. Anu joins us at COTA.','all','cota'),
+S(23,'23:30','Cocktails at home after the concert','Or, if everyone has the energy, a downtown speakeasy instead (for example Midnight Cowboy). Check hours and book ahead.','cth','fun'),
+S(24,'09:30','Breakfast at home','','cth','food'),
+S(24,'11:30','Lunch at Patne’s place (11:30 am to 12 pm)','Tell Patne what you would like on the Food and places page.','cth','food'),
+S(24,'13:00','Head to COTA','Qualifying is at 4 pm.','cth','travel'),
+S(24,'13:00','Ambika and Anu join us at COTA','They head there on their own and meet us on the Turn 3–4 hill.','an','cota'),
+S(24,'14:30','Settle on the Turn 3–4 hill','Chairs and blanket down.','all','cota'),
 S(24,'16:00','Qualifying','','all','cota'),
 S(24,'17:30','Dinner at COTA','','all','food'),
 S(24,'19:30','Post Malone live (time TBA)','Set time is not published yet.','all','cota'),
@@ -116,7 +120,7 @@ S(25,'15:00','RACE: 56 laps','','all','cota'),
 S(25,'17:00','Chequered flag and trophy ceremony','','all','cota'),
 S(25,'20:00','Cocktails at Powder Room (booked)','301 W 5th St, downtown. Leaving COTA can take an hour or two, so we may ask them to push the booking back.','ctha','tbd'),
 S(26,'05:30','Hetvi flies home','','h','travel'),
-S(26,'11:00','Ambika’s bus home','','a','travel'),
+S(26,'11:00','Ambika’s bus to Dallas for her flight home','','a','travel'),
 S(26,'17:20','Early dinner at The Oasis on Lake Travis','6550 Comanche Trail. Sunset is 6:50 pm, so the bell may be missed before a 9 pm flight.','ct','fun'),
 S(26,'21:00','Tanmay flies home (about 9 pm, to confirm)','','t','tbd'),
 S(27,'08:00','Back to normal life','Write your trip notes on the After page.','all','work')
@@ -127,7 +131,7 @@ const dayLabel=d=>{const x=DAYS.find(y=>y.d===d);return x?x.s+' Oct '+x.n:d};
 const hm=t=>{let [h,m]=t.split(':').map(Number);const ap=h>=12?'pm':'am';h=h%12||12;return h+':'+String(m).padStart(2,'0')+' '+ap};
 function nowCT(){const p={};new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return p.year+'-'+p.month+'-'+p.day+' '+(p.hour==='24'?'00':p.hour)+':'+p.minute}
 /* ---------- nav (one HTML file per page) ---------- */
-const VIEWS=[['home','Home','Countdown, quests, note to the host'],['schedule','Schedule','Day by day, filter by person'],['crew','Crew','Who is arriving and leaving, driver cards'],['directory','Directory','Phone numbers for the group'],['info','Pack & Info','Address, Wi-Fi, what to bring'],['cota','COTA','Official map, timetable, parking, rules'],['texas','Food & Texas','BBQ, meals and what you want to eat'],['cocktails','Cocktails','Pick your drinks for cocktail night'],['play','Play','Predictions, awards, bingo, playlist'],['photos','Photos','Post 2 photos, build the collage'],['leaderboard','Standings','Championship leaderboard'],['after','After','Write how the trip went']];
+const VIEWS=[['home','Home','Countdown, quests, note to the host'],['schedule','Schedule','Day by day, filter by person'],['crew','Crew','Who is arriving and leaving, driver cards'],['directory','Directory','Phone numbers for the group'],['info','Pack & Info','Address, Wi-Fi, what to bring'],['cota','COTA','Official map, timetable, parking, rules'],['texas','Food and places','BBQ, meals and what you want to eat'],['cocktails','Cocktails','Pick your drinks for cocktail night'],['play','Play','Predictions, awards, bingo, playlist'],['photos','Photos','Post 2 photos, build the collage'],['leaderboard','Standings','Championship leaderboard'],['after','After','Write how the trip went']];
 const PAGE=document.body.dataset.page||'index';
 $('#tabs').innerHTML=VIEWS.map(v=>`<a href="${v[0]}.html"${v[0]===PAGE?' aria-current="page"':''}>${v[1]}</a>`).join('');
 $('#navgrid').innerHTML=VIEWS.slice(1).map(v=>`<a href="${v[0]}.html"><div class="card"><h3>${v[1]}</h3><p>${v[2]}</p></div></a>`).join('');
@@ -157,6 +161,7 @@ function renderSchedule(){
   const k=nowCT(),list=EV.filter(e=>e.d===curDay&&(filt==='all'||e.who.includes(filt)));
   const nextI=EV.findIndex(e=>(e.d+' '+e.t)>k);const nextEv=nextI>-1?EV[nextI]:null;
   $('#timeline').innerHTML=list.length?list.map(e=>`<li class="ev c-${e.tag}${e===nextEv?' now':''}"><time>${hm(e.t)}</time><div class="card"><h3>${esc(e.title)}</h3>${e.note?`<p>${esc(e.note)}</p>`:''}<div class="meta"><span class="tag t-${e.tag}">${TAGN[e.tag]}</span>${e.who.length===5?'<span class="small">Everyone</span>':`<span class="dots">${e.who.map(dot).join('')}</span>`}${e===nextEv?'<span class="tag t-tbd" style="border-color:var(--red);color:var(--red)">Next up</span>':''}</div></div></li>`).join(''):'<li class="small">Nothing on this day for this person.</li>';
+  renderDayTravel();
 }
 document.addEventListener('click',e=>{
   const g=e.target.closest('[data-day]');if(g){curDay=g.dataset.day;lsSet('cota.day',curDay);renderSchedule();if(g.closest('#glance'))$('#days').scrollIntoView({behavior:'smooth',block:'start'});return}
@@ -166,8 +171,8 @@ document.addEventListener('click',e=>{
 const LEGS={
  tanmay:[['in','Arrive','Fri Oct 23','2:00 am (overnight)','Flight',''],['out','Depart','Mon Oct 26','About 9:00 pm (to confirm)','Flight','']],
  hetvi:[['in','Arrive','Fri Oct 23','About 4:00 pm','Flight',''],['out','Depart','Mon Oct 26','5:30 am','Flight','']],
- ambika:[['in','Arrive','Sat Oct 24','12:00 pm','Bus',''],['out','Depart','Mon Oct 26','11:00 am','Bus','']],
- anu:[['in','Arrive','Sat Oct 24','Morning, straight to COTA','Bus or ride','Meets us at COTA. Sleeps at Patne\u2019s on Saturday night.'],['out','Depart','Sun Oct 25','About 7:00 pm','Ride','After the trophy ceremony.']]};
+ ambika:[['in','Arrive','Sat Oct 24','12:00 pm','Bus','Joins the group at COTA around 1 pm.'],['out','Depart','Mon Oct 26','11:00 am','Bus','Bus to Dallas for her flight home.']],
+ anu:[['in','Arrive','Sat Oct 24','Morning (at COTA by 1 pm)','Bus or ride','Joins the group at COTA. Sleeps at Patne’s on Saturday night.'],['out','Depart','Sun Oct 25','About 7:00 pm','Ride','After the trophy ceremony.']]};
 let editLeg='';
 function renderCrew(){
   $('#crewgrid').innerHTML=PEOPLE.map(p=>{
@@ -181,10 +186,10 @@ document.addEventListener('click',async e=>{
   const ed=e.target.closest('[data-edit]');if(ed){editLeg=ed.dataset.edit;renderCrew();return}
   if(e.target.closest('[data-cancel]')){editLeg='';renderCrew();return}
   const sv=e.target.closest('[data-save]');if(sv){const box=sv.closest('[data-leg]'),d={};$$('input',box).forEach(i=>d[i.dataset.k]=i.value.trim());editLeg='';await Store.set('legs',sv.dataset.save,d);toast('Saved')}});
-Store.watch('legs',m=>{legs=m;if(!editLeg)renderCrew();refreshXP()});
+Store.watch('legs',m=>{legs=m;if(!editLeg)renderCrew();renderSchedule();refreshXP()});
 
 /* ---------- info ---------- */
-const HF=[['address','Address','Add address'],['phone','Phone','Add phone'],['plate','Plate','Add plate'],['wifi','Wi-Fi network','Network name'],['wifipass','Wi-Fi password','Password'],['note','House notes','Parking, door, shoes off, etc.']];
+const HF=[['address','Address','Add address'],['phone','Phone','Add phone'],['plate','Car\'s number plate','Add number plate'],['wifi','Wi-Fi network','Network name'],['wifipass','Wi-Fi password','Password'],['note','House notes','Parking, door, shoes off, etc.']];
 let host=Object.assign({},TRIP),editHost=false;
 const m0=()=>host;
 function renderHost(){
@@ -201,12 +206,13 @@ document.addEventListener('click',async e=>{
 const TEX=[
  ['Fri 11:45 am','Terry Black’s BBQ','1003 Barton Springs Rd. Opens at 11, so expect a line by noon.','Terry Black’s BBQ 1003 Barton Springs Rd Austin','food'],
  ['Fri 1:15 pm','Mercedes F1 Fan Hub','400 Congress Ave, downtown. Free, Oct 22–25. Pit-stop challenge, simulators, show car. Hours not published; entry is by queue.','Mercedes F1 Fan Hub 400 Congress Ave Austin','tbd'],
+ ['Fri after the concert','Cocktails at home, or a speakeasy','Back home for cocktails after Maroon 5. If everyone has the energy, a downtown speakeasy is the alternative. Check hours and book ahead.',null,'fun'],
  ['Sat–Sun','Turn 3–4 hill','Our home on the grass for qualifying and the race.','Circuit of the Americas Turn 3','cota'],
- ['Sat 1:00 pm','Lunch at Patne’s place','Tell Patne what you would like, below.',null,'food'],
+ ['Sat 11:30 am','Lunch at Patne’s place','Tell Patne what you would like, below.',null,'food'],
  ['Sat 10:30 pm','Cocktail night at home','Right after we are back from COTA. Pick your drinks on the Cocktails page.',null,'fun'],
  ['Sun 8:00 pm','Powder Room','301 W 5th St, downtown. Cocktails booked for the group.','Powder Room 301 W 5th St Austin','fun'],
  ['Mon 5:20 pm','The Oasis on Lake Travis','Early dinner on the deck, 6550 Comanche Trail. Sunset is 6:50, so the bell may be missed before a 9 pm flight.','The Oasis on Lake Travis 6550 Comanche Trail Austin','fun']];
-const TEXWHO=[['patne','tanmay'],['patne','tanmay'],PID,['patne','tanmay','hetvi','ambika'],PID,['patne','tanmay','hetvi','ambika'],['patne','tanmay']];
+const TEXWHO=[['patne','tanmay'],['patne','tanmay'],['patne','tanmay','hetvi'],PID,['patne','tanmay','hetvi'],PID,['patne','tanmay','hetvi','ambika'],['patne','tanmay']];
 $('#texgrid').innerHTML=TEX.map((t,i)=>`<div class="card stack"><div class="row" style="justify-content:space-between"><span class="eyebrow">${t[0]}</span><span class="tag t-${t[4]}">${TAGN[t[4]]}</span></div><h3>${t[1]}</h3><p class="small">${t[2]}</p>${t[3]?`<a class="small" href="${maps(t[3])}" target="_blank" rel="noopener">Open in Maps</a>`:''}<div class="dots" style="margin-top:2px">${TEXWHO[i].map(dot).join('')}</div></div>`).join('');
 function renderMenu(){const box=$('#menuvote');if(!document.getElementById('menuvote'))return;
   const f=document.activeElement;if(f&&f.id==='menuin')return;
@@ -238,7 +244,7 @@ Store.watch('songs',m=>{songs=m;renderSongs();refreshXP()});
 
 /* ---------- after ---------- */
 let stars=0,jdraft={};
-const JF=[['best','Best moment','The one you will retell'],['funny','Funniest moment',''],['food','Favourite thing you ate',''],['change','What should we change next time?',''],['note','One line for the group','']];
+const JF=[['best','Best moment','The one you will retell'],['funny','Funniest moment',''],['food','Favourite thing you ate',''],['change','Any feedback for the host?',''],['note','One line for the group','']];
 function renderJournal(){
   if(!ME){$('#journalform').innerHTML='<h3>Your page</h3><p class="small" style="margin-top:6px">Pick who you are at the top right to write yours.</p>';}
   else{const mine=jr[ME]||{},cur=stars||mine.stars||0;
@@ -393,6 +399,15 @@ document.addEventListener('click',async e=>{const g=e.target.closest('[data-hl]'
   if(g){const id=g.dataset.hl,i=$(`[data-hlr="${id}"]`);await Store.set('highlights',id,{reason:(i.value||'').trim()||'A great moment',pts:HL_PTS,ts:Date.now()});toast('Highlight awarded')}
   if(x){await Store.del('highlights',x.dataset.hlx);toast('Removed')}});
 Store.watch('highlights',m=>{highlights=m;renderHL();refreshXP()});
+
+/* ---------- arrivals and departures on the schedule ---------- */
+function renderDayTravel(){const box=$('#daytravel');if(!box)return;
+  const d=DAYS.find(x=>x.d===curDay);if(!d){box.innerHTML='';return}
+  const key=d.s+' Oct '+d.n,rows=[];
+  PEOPLE.forEach(p=>{if(!LEGS[p.id])return;if(filt!=='all'&&filt!==p.id)return;
+    LEGS[p.id].forEach(L=>{if(L[2]!==key)return;const sv=legs[p.id+'-'+L[0]]||{};
+      rows.push(`<div class="row" style="justify-content:space-between;gap:8px;padding:5px 0"><span>${dot(p.id)} <b>${esc(p.name.split(' ')[0])}</b> ${L[0]==='in'?'arrives':'leaves'}</span><span class="small" style="text-align:right">${esc(sv.time||L[3])}${sv.ref?' \u00b7 '+esc(sv.ref):''}${sv.where?' \u00b7 '+esc(sv.where):''}</span></div>`)})});
+  box.innerHTML=rows.length?`<div class="card plain" style="margin-bottom:12px"><h3>Arrivals and departures</h3>${rows.join('')}<p class="small" style="margin-top:6px">Updates by itself when anyone edits their times on the Crew page.</p></div>`:''}
 
 /* ---------- boot ---------- */
 function rerenderAll(){renderSchedule();renderMenu();renderPreds();renderAwards();renderJournal();renderPack();renderBingo();renderCocktails();renderPhotos();renderNotes();renderProfile();renderCrew();prefillFrom();refreshXP()}
