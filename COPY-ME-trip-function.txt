@@ -5,7 +5,7 @@
 // GET/POST /api/photo?person=patne&slot=1 -> one trip photo (JPEG)
 import { getStore } from "@netlify/blobs";
 
-const COLS = new Set(["legs", "host", "menu", "preds", "awards", "songs", "journal", "prog", "cocktails", "notes", "photos", "bonus", "profiles"]);
+const COLS = new Set(["legs", "host", "menu", "preds", "awards", "songs", "journal", "prog", "cocktails", "notes", "photos", "bonus", "profiles", "phones", "highlights"]);
 const ID = /^[A-Za-z0-9_-]{1,60}$/;
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
