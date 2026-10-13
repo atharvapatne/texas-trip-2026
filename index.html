@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Texas F1 Weekend</title>
-<meta name="description" content="US Grand Prix weekend in Austin, Oct 22-27: schedule, crew, COTA info and more.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23C8321F' d='M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z'/%3E%3C/svg%3E">
+<title>Texas × F1 Weekend</title>
+<meta name="description" content="US Grand Prix weekend in Austin, Oct 22-27: schedule, crew, quests and a championship.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23BF5700' stroke='%232A1608' stroke-width='1.5' d='M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Baloo+2:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="index">
-<div class="flag" aria-hidden="true"></div>
 <header class="top">
+  <div class="flag" aria-hidden="true" style="margin:-8px -16px 8px"></div>
   <div class="bar">
-    <a class="brand" href="index.html"><svg class="star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z"/></svg>Texas × F1</a>
+    <a class="brand" href="index.html"><svg class="lh" viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c1 9 7 11 13 9M37 11c-1 9-7 11-13 9" stroke="#2A1608" stroke-width="7"/><path d="M3 11c1 9 7 11 13 9M37 11c-1 9-7 11-13 9" stroke="#FFFDF6" stroke-width="3"/></g><path d="M12 17h16l-2 14c-1 4-11 4-12 0z" fill="#BF5700" stroke="#2A1608" stroke-width="3" stroke-linejoin="round"/><circle cx="16.5" cy="23" r="1.6" fill="#2A1608"/><circle cx="23.5" cy="23" r="1.6" fill="#2A1608"/><path d="M33 3l1.2 2.7 2.8.3-2.1 1.9.6 2.8-2.5-1.5-2.5 1.5.6-2.8-2.1-1.9 2.8-.3z" fill="#FFC933" stroke="#2A1608" stroke-width="1"/></svg>Texas × F1</a>
     <div class="tools">
+      <a class="xp" id="xp" href="leaderboard.html">Pick your driver →</a>
       <select class="who" id="me" aria-label="Who are you?"></select>
-      <button class="icon-btn" id="theme" aria-label="Toggle light or dark"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/></svg></button>
     </div>
   </div>
   <nav class="tabs" id="tabs" aria-label="Pages"></nav>
@@ -25,18 +25,86 @@
 <main class="wrap">
 <section class="view">
   <div class="hero">
-    <svg class="bigstar" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z"/></svg>
-    <div class="eyebrow">Oct 22 – 27, 2026 · Austin, Texas</div>
-    <h1>US Grand Prix<br>+ the Texan Experience</h1>
-    <p style="margin-top:10px;max-width:46ch;opacity:.92">Five friends, one Mazda CX-5, Turn 3–4 lawn, Maroon 5, Post Malone and a lot of BBQ.</p>
-    <div class="count" id="count" aria-live="off"></div>
+    <svg class="scene" viewBox="0 0 800 380" preserveAspectRatio="xMaxYMid slice" role="img" aria-label="Cartoon red race car speeding past a cactus and a Texas flag">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD66B"/><stop offset=".6" stop-color="#FFB347"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient>
+  </defs>
+  <rect width="800" height="380" fill="url(#sky)"/>
+  <g class="rays" opacity=".35" fill="#FFF3D6"><path d="M400 250 L-100 -40 L0 -40Z"/><path d="M400 250 L120 -60 L240 -60Z"/><path d="M400 250 L340 -60 L460 -60Z"/><path d="M400 250 L580 -60 L700 -60Z"/><path d="M400 250 L800 -60 L900 -60Z"/></g>
+  <circle cx="400" cy="250" r="78" fill="#FFF3D6" stroke="#2A1608" stroke-width="5"/>
+  <g class="cloud" fill="#FFFDF6" stroke="#2A1608" stroke-width="4" stroke-linejoin="round"><path d="M90 90c0-22 34-28 44-10 10-22 48-18 50 6 22 0 28 28 4 30H100c-22 0-26-24-10-26z"/></g>
+  <g class="cloud2" fill="#FFFDF6" stroke="#2A1608" stroke-width="4" stroke-linejoin="round"><path d="M600 60c0-20 30-24 40-8 10-20 44-16 46 6 20 0 24 26 4 28h-76c-20 0-24-22-14-26z"/></g>
+  <path d="M0 262 C100 215 190 245 280 235 C380 222 470 250 560 232 C650 214 730 240 800 228 L800 380 L0 380Z" fill="#E9A15B" stroke="#2A1608" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M0 300 L800 300 L800 380 L0 380Z" fill="#4B3A33" stroke="#2A1608" stroke-width="5"/>
+  <g stroke="#FFFDF6" stroke-width="8" stroke-dasharray="46 34" stroke-linecap="round"><path class="road" d="M-40 345 H840"/></g>
+  <!-- cactus -->
+  <g stroke="#2A1608" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" fill="#3FA564">
+    <path d="M690 290 V205 a18 18 0 0 1 36 0 V290Z"/>
+    <path d="M690 255 h-20 a14 14 0 0 1 -14 -14 v-24 a12 12 0 0 1 24 0 v22 h10"/>
+    <path d="M726 240 h18 a14 14 0 0 0 14 -14 v-18 a12 12 0 0 0 -24 0 v16 h-8"/>
+  </g>
+  <!-- flag pole -->
+  <g stroke="#2A1608" stroke-width="5" stroke-linejoin="round">
+    <path d="M70 300 V150" stroke-linecap="round"/>
+    <g class="flagw"><rect x="70" y="150" width="30" height="48" fill="#1F4BA8"/><rect x="100" y="150" width="62" height="24" fill="#FFFDF6"/><rect x="100" y="174" width="62" height="24" fill="#D7263D"/>
+    <path d="M85 160l3.4 8 8.6.6-6.6 5.6 2.1 8.4-7.5-4.6-7.5 4.6 2.1-8.4-6.6-5.6 8.6-.6z" fill="#FFFDF6" stroke-width="2"/></g>
+  </g>
+  <!-- car -->
+  <g class="car" stroke="#2A1608" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+    <g class="lines" stroke="#FFFDF6" stroke-width="6" opacity=".9"><path d="M120 258 H270"/><path d="M60 280 H230"/><path d="M150 302 H260" /></g>
+    <ellipse cx="470" cy="312" rx="190" ry="12" fill="#2A1608" opacity=".35" stroke="none"/>
+    <!-- rear wing -->
+    <path d="M300 214 L296 160 H352 L356 176 H320 L324 214Z" fill="#C81D25"/>
+    <rect x="288" y="150" width="76" height="16" rx="4" fill="#FFC933"/>
+    <!-- body -->
+    <path d="M330 250 C340 218 370 214 410 212 L520 206 C560 202 600 214 690 246 C706 252 706 262 690 268 L350 276 C332 276 326 262 330 250Z" fill="#E4252D"/>
+    <path d="M404 214 C420 196 450 190 478 200 L520 206 L450 214Z" fill="#2A1608" stroke="none"/>
+    <path d="M440 222 C470 222 520 226 560 238 L430 240Z" fill="#FFFDF6" opacity=".9" stroke="none"/>
+    <circle cx="470" cy="252" r="15" fill="#FFC933" stroke-width="4"/>
+    <path d="M470 243l2.6 6 6.4.4-4.9 4.2 1.6 6.2-5.7-3.4-5.7 3.4 1.6-6.2-4.9-4.2 6.4-.4z" fill="#1F4BA8" stroke-width="1.5"/>
+    <!-- driver -->
+    <circle cx="445" cy="190" r="22" fill="#FFC933"/>
+    <path d="M448 178 h18 a6 6 0 0 1 6 6 v6 h-24z" fill="#2A1608" stroke="none"/>
+    <path d="M418 208 C420 196 432 190 445 190" fill="none"/>
+    <path d="M410 176 C430 160 480 160 500 176" fill="none" stroke-width="7"/>
+    <!-- front wing -->
+    <path d="M630 262 L716 262 L722 276 L632 280Z" fill="#C81D25"/>
+    <rect x="700" y="254" width="24" height="30" rx="4" fill="#FFC933"/>
+    <!-- wheels -->
+    <g class="wheel"><circle cx="360" cy="268" r="42" fill="#2A1608"/><circle cx="360" cy="268" r="19" fill="#FFC933" stroke-width="4"/><circle cx="360" cy="268" r="5" fill="#2A1608" stroke="none"/><path d="M360 252 v32 M344 268 h32" stroke-width="4"/></g>
+    <g class="wheel"><circle cx="640" cy="274" r="34" fill="#2A1608"/><circle cx="640" cy="274" r="15" fill="#FFC933" stroke-width="4"/><circle cx="640" cy="274" r="4" fill="#2A1608" stroke="none"/><path d="M640 261 v26 M627 274 h26" stroke-width="3"/></g>
+  </g>
+</svg>
+
+    <img class="hero-photo" src="hero.jpg" alt="" onerror="this.remove()">
+    <div class="title"><h1>US Grand Prix<br>Texas Edition</h1><span class="tag-line">Oct 22–27 · Austin · 5 drivers</span></div>
   </div>
+  <div class="count-wrap">
+    <div class="eyebrow">Lights out in</div>
+    <div class="count" id="count" aria-live="off"></div>
+    <div class="small">Sunday Oct 25, 3:00 pm · Turn 3–4 lawn</div>
+  </div>
+  <div class="card pop" id="xpcard"></div>
   <div class="card" id="nownext"></div>
+  <div class="card note-card">
+    <h3>Note for the host</h3>
+    <p class="small" style="margin:4px 0 10px">Need anything? Allergies, a snack you love, a question, or just a hello. Patne reads every one.</p>
+    <div class="stack">
+      <div><label for="hn-from">Your name</label><input type="text" id="hn-from" placeholder="Your name"></div>
+      <div><label for="hn-text">Your note</label><textarea id="hn-text" placeholder="Write here..."></textarea></div>
+      <div><button class="btn red" id="hn-send">Send to Patne</button> <span class="small">+5 pts</span></div>
+    </div>
+    <div id="hn-list"></div>
+  </div>
   <div class="facts">
     <div class="fact"><b>Sun 3:00 pm</b><small>Race · Turn 3–4 GA lawn · gates ~8 am (TBC)</small></div>
     <div class="fact"><b>Fri 11:45 am</b><small>Terry Black's BBQ, then Mercedes F1 Fan Hub, with Tanmay</small></div>
-    <div class="fact"><b>Sat 11:30 pm</b><small>Cocktail night at Chaitrali's</small></div>
+    <div class="fact"><b>Sat 11:30 pm</b><small>Cocktail night at Patne's. Pick your drinks first!</small></div>
     <div class="fact"><b>Sun 8:00 pm</b><small>Powder Room cocktails, downtown (booked)</small></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><h3>Championship</h3><a class="btn alt" href="leaderboard.html">Full standings</a></div>
+    <div id="miniboard"></div>
   </div>
   <div>
     <div class="eyebrow" style="margin-bottom:8px">Jump to</div>
@@ -44,8 +112,10 @@
   </div>
   <div class="card plain"><h3>Still to confirm</h3><p class="small" style="margin:4px 0 10px">Anything with a dashed border on the Schedule is a guess or an open question. These are the ones that matter most.</p><ul id="open" class="stack" style="margin:0;padding-left:18px"></ul></div>
 </section>
+<div class="foot"><span class="mode" id="mode"></span><span class="small">Made with love in Oak Hill, Texas</span></div>
 </main>
 <div class="toast" id="toast" hidden></div>
+<form name="host-note" data-netlify="true" netlify-honeypot="bot" hidden><input name="from"><input name="text"><input name="bot"></form>
 <script src="app.js"></script>
 </body>
 </html>

@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Crew | Texas F1</title>
-<meta name="description" content="Flights, buses and pickups for everyone.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23C8321F' d='M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z'/%3E%3C/svg%3E">
+<title>The Crew | Texas F1</title>
+<meta name="description" content="Flights, buses and pickups.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23BF5700' stroke='%232A1608' stroke-width='1.5' d='M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Baloo+2:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="crew">
-<div class="flag" aria-hidden="true"></div>
 <header class="top">
+  <div class="flag" aria-hidden="true" style="margin:-8px -16px 8px"></div>
   <div class="bar">
-    <a class="brand" href="index.html"><svg class="star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z"/></svg>Texas × F1</a>
+    <a class="brand" href="index.html"><svg class="lh" viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c1 9 7 11 13 9M37 11c-1 9-7 11-13 9" stroke="#2A1608" stroke-width="7"/><path d="M3 11c1 9 7 11 13 9M37 11c-1 9-7 11-13 9" stroke="#FFFDF6" stroke-width="3"/></g><path d="M12 17h16l-2 14c-1 4-11 4-12 0z" fill="#BF5700" stroke="#2A1608" stroke-width="3" stroke-linejoin="round"/><circle cx="16.5" cy="23" r="1.6" fill="#2A1608"/><circle cx="23.5" cy="23" r="1.6" fill="#2A1608"/><path d="M33 3l1.2 2.7 2.8.3-2.1 1.9.6 2.8-2.5-1.5-2.5 1.5.6-2.8-2.1-1.9 2.8-.3z" fill="#FFC933" stroke="#2A1608" stroke-width="1"/></svg>Texas × F1</a>
     <div class="tools">
+      <a class="xp" id="xp" href="leaderboard.html">Pick your driver →</a>
       <select class="who" id="me" aria-label="Who are you?"></select>
-      <button class="icon-btn" id="theme" aria-label="Toggle light or dark"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/></svg></button>
     </div>
   </div>
   <nav class="tabs" id="tabs" aria-label="Pages"></nav>
@@ -25,11 +25,12 @@
 <main class="wrap">
 <section class="view">
   <div><div class="eyebrow">Flights · buses · pickups</div><h2>The crew</h2>
-    <p class="lede" style="margin-top:6px">Everyone's arrival and departure. Tap Edit on your own card to add your flight or bus details once you have them, so Chaitrali can plan pickups.</p></div>
+    <p class="lede" style="margin-top:6px">Everyone's arrival and departure. Tap Edit on your own card to add your flight or bus details once you have them, so Patne can plan pickups.</p></div>
   <div class="mode small" id="mode-crew"></div>
   <div class="grid" id="crewgrid"></div>
-  <div class="warn"><b>Monday is the busiest day.</b> Hetvi's flight is at 5:30 am (Tanmay drives her at 3:00 am), Ambika's bus is at 11:00 am (Tanmay drives), Chaitrali is at work 8–4:30, and Tanmay flies out about 9:00 pm, so the Oasis dinner is early.</div>
+  <div class="warn"><b>Monday is the busiest day.</b> Hetvi's flight is at 5:30 am (Tanmay drives her at 3:00 am), Ambika's bus is at 11:00 am (Tanmay drives), Patne is at work 8–4:30, and Tanmay flies out about 9:00 pm, so the Oasis dinner is early.</div>
 </section>
+<div class="foot"><span class="mode" id="mode"></span><span class="small">Made with love in Oak Hill, Texas</span></div>
 </main>
 <div class="toast" id="toast" hidden></div>
 <script src="app.js"></script>

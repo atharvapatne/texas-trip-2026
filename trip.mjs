@@ -2,17 +2,39 @@
 // GET    /api/trip?col=awards              -> { id: {...}, ... }
 // POST   /api/trip   {col, id, data}       -> saves one document
 // DELETE /api/trip?col=songs&id=s123    -> removes one document
+// GET/POST /api/photo?person=patne&slot=1 -> one trip photo (JPEG)
 import { getStore } from "@netlify/blobs";
 
-const COLS = new Set(["legs", "host", "menu", "preds", "awards", "songs", "journal"]);
+const COLS = new Set(["legs", "host", "menu", "preds", "awards", "songs", "journal", "prog", "cocktails", "notes", "photos", "bonus"]);
 const ID = /^[A-Za-z0-9_-]{1,60}$/;
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+
+const PEOPLE = new Set(["patne", "tanmay", "hetvi", "ambika", "anu"]);
+
+async function photo(req, store, url) {
+  const person = url.searchParams.get("person"), slot = url.searchParams.get("slot") || "";
+  if (!PEOPLE.has(person) || !["1", "2"].includes(slot)) return json({ error: "bad request" }, 400);
+  const key = "photo/" + person + "-" + slot;
+  if (req.method === "GET") {
+    const buf = await store.get(key, { type: "arrayBuffer" });
+    if (!buf) return new Response("not found", { status: 404 });
+    return new Response(buf, { headers: { "content-type": "image/jpeg", "cache-control": "public, max-age=300" } });
+  }
+  if (req.method === "POST") {
+    const buf = await req.arrayBuffer();
+    if (buf.byteLength > 4500000 || buf.byteLength < 100) return json({ error: "bad size" }, 413);
+    await store.set(key, buf);
+    return json({ ok: true });
+  }
+  return json({ error: "method not allowed" }, 405);
+}
 
 export default async (req) => {
   const store = getStore("trip");
   const url = new URL(req.url);
   try {
+    if (url.pathname === "/api/photo") return await photo(req, store, url);
     if (req.method === "GET") {
       const col = url.searchParams.get("col");
       if (!COLS.has(col)) return json({ error: "bad collection" }, 400);
@@ -44,4 +66,4 @@ export default async (req) => {
   }
 };
 
-export const config = { path: "/api/trip" };
+export const config = { path: ["/api/trip", "/api/photo"] };

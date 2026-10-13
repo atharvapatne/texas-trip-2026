@@ -1,10 +1,11 @@
 (function(){
 'use strict';
 const PEOPLE=[
- {id:'chaitrali',name:'Chaitrali',ab:'Ch',c:'pc1'},{id:'tanmay',name:'Tanmay',ab:'Ta',c:'pc2'},
+ {id:'patne',name:'Patne',ab:'Pa',c:'pc1'},{id:'tanmay',name:'Tanmay',ab:'Ta',c:'pc2'},
  {id:'hetvi',name:'Hetvi',ab:'He',c:'pc3'},{id:'ambika',name:'Ambika',ab:'Am',c:'pc4'},{id:'anu',name:'Anu',ab:'An',c:'pc5'}];
 const PID=PEOPLE.map(p=>p.id), P=Object.fromEntries(PEOPLE.map(p=>[p.id,p]));
-const SH={c:'chaitrali',t:'tanmay',h:'hetvi',a:'ambika',n:'anu'};
+let legs={},menu={},preds={},awards={},songs={},jr={},cocktails={},photos={},notes={},bonus={},prog={},lastTotal=null,lastLevel=null,acted=0,collageTok=0;
+const SH={c:'patne',t:'tanmay',h:'hetvi',a:'ambika',n:'anu'};
 const $=(s,r=document)=>r.querySelector(s)||document.createElement('div'), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dot=id=>`<span class="dot ${P[id].c}" title="${P[id].name}">${P[id].ab}</span>`;
@@ -15,17 +16,42 @@ let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;
 async function copy(txt){try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){try{const a=document.createElement('textarea');a.value=txt;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();toast('Copied')}catch(e2){toast('Copy is blocked here. Select the text instead.')}}}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-copy]');if(b)copy(b.dataset.copy)});
 
+/* ---------- levels, pack list, quests (defined early: used by every page) ---------- */
+const LEVELS=[{at:0,name:'Rookie'},{at:25,name:'Pit Crew'},{at:60,name:'Qualifier'},{at:100,name:'Pole Sitter'},{at:140,name:'Podium Finisher'},{at:175,name:'World Champion'}];
+const levelOf=t=>LEVELS.filter(l=>t>=l.at).pop();
+const nextLevel=t=>LEVELS.find(l=>l.at>t);
+const PACK=[
+ ['Must-haves',['Photo ID (needed to get into COTA)','Phone and charger cable','Power bank, fully charged','Debit or credit card (COTA is cashless: Visa, Mastercard, Amex or Discover)','Your flight or bus details, screenshotted']],
+ ['Race-day comfort',['Comfortable closed shoes you can walk miles in','Sunglasses','Sunscreen in a plastic bottle (no spray cans)','A light layer for cool evenings','Small bag or crossbody (max 12 x 12 x 20 in)','Lip balm and hair ties or a bandana']],
+ ['Nights out',['A nicer outfit for Powder Room on Sunday','Something fun for cocktail night on Saturday','Shoes you can two-step in']],
+ ['The basics',['Three days of comfy clothes and pajamas','Toiletries and your own medicines','Glasses or contact lenses','Phone storage cleared for photos']]];
+const PACKITEMS=PACK.reduce((a,g)=>a.concat(g[1]),[]);
+const BINGO=['Cowboy hat in the wild','Someone says y’all','Truck bigger than the CX-5','Longhorn spotted','Brisket tasted','Texas flag on a building','Armadillo (a sign counts)','Lone Star beer','Queso','Boot shop','Country song on the radio','Sunburn line','FREE ★','Bluebonnet merch','Live band','Lost in the parking lot','F1 fan in a rival kit','Two-step attempted','Sunset over water','Chair breaks or pops','Someone loses the hat','Giant BBQ sign','Earplugs to the rescue','Selfie with the car','Gas station snack run'];
+const bingoLines=b=>{const L=[];for(let r=0;r<5;r++){L.push([0,1,2,3,4].map(c=>r*5+c));L.push([0,1,2,3,4].map(c=>c*5+r))}L.push([0,6,12,18,24],[4,8,12,16,20]);return L.filter(l=>l.every(i=>i===12||b[i])).length};
+const cnt=o=>Object.values(o||{}).filter(Boolean).length;
+const QUESTS=[
+ {id:'travel',label:'Add your flight or bus details',max:10,to:'crew.html',calc:p=>(legs[p+'-in']||legs[p+'-out'])?10:0},
+ {id:'cocktail',label:'Pick your cocktails',max:10,to:'cocktails.html',calc:p=>cocktails[p]?10:0},
+ {id:'pack',label:'Check off your pack list',max:PACKITEMS.length+5,to:'info.html',calc:p=>{const n=cnt((prog[p]||{}).packed);return n+(n>=PACKITEMS.length?5:0)}},
+ {id:'menu',label:'Vote for Saturday’s lunch',max:5,to:'texas.html',calc:p=>menu[p]?5:0},
+ {id:'predict',label:'Lock in your race predictions',max:15,to:'play.html',calc:p=>preds[p]?15:0},
+ {id:'awards',label:'Vote in the trip awards',max:12,to:'play.html',calc:p=>cnt(((awards[p]||{}).v))*2},
+ {id:'bingo',label:'Play Texas bingo',max:35,to:'play.html',calc:p=>{const b=(prog[p]||{}).bingo||{};return Math.min(35,cnt(b)+bingoLines(b)*5)}},
+ {id:'songs',label:'Add songs to the playlist',max:15,to:'play.html',calc:p=>Math.min(3,Object.values(songs).filter(s=>s.by===p).length)*5},
+ {id:'photos',label:'Post your 2 best photos',max:20,to:'photos.html',calc:p=>[1,2].filter(s=>photos[p+'-'+s]).length*10},
+ {id:'note',label:'Leave a note for the host',max:5,to:'index.html',calc:p=>Object.values(notes).some(n=>n.by===p)?5:0},
+ {id:'journal',label:'Write your trip page',max:25,to:'after.html',calc:p=>(jr[p]&&jr[p].ts)?25:0}];
+function score(p){const rows=QUESTS.map(q=>({id:q.id,label:q.label,to:q.to,max:q.max,pts:Math.min(q.max,q.calc(p))}));const bn=(bonus[p]||{}).pts||0;return{rows,bonus:bn,total:rows.reduce((a,r)=>a+r.pts,0)+bn}}
+const BADGES=[['travel','Navigator'],['cocktail','Bar Regular'],['pack','Packed & Ready'],['predict','Fortune Teller'],['bingo','Bingo Hunter'],['photos','Shutterbug'],['journal','Storyteller'],['songs','DJ'],['note','Chatterbox']];
+const badgesOf=s=>BADGES.filter(b=>{const r=s.rows.find(x=>x.id===b[0]);return r&&r.pts>0&&(b[0]!=='pack'||r.pts>=r.max)&&(b[0]!=='photos'||r.pts>=r.max)}).map(b=>b[1]);
+
 /* ---------- me ---------- */
 let ME=lsGet('cota.me','');
 const meSel=$('#me');
-meSel.innerHTML='<option value="">Who are you?</option>'+PEOPLE.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+meSel.innerHTML='<option value="">Pick your driver</option>'+PEOPLE.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
 meSel.value=ME;
-meSel.onchange=()=>{ME=meSel.value;lsSet('cota.me',ME);rerenderAll()};
-function needMe(){if(!ME){toast('Pick who you are at the top right first');return true}return false}
-
-/* ---------- theme ---------- */
-(function(){const t=lsGet('cota.theme','');if(t)document.documentElement.dataset.theme=t})();
-$('#theme').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';lsSet('cota.theme',r.dataset.theme)};
+meSel.onchange=()=>{ME=meSel.value;lsSet('cota.me',ME);lastTotal=null;rerenderAll()};
+function needMe(){if(!ME){toast('Pick your driver at the top right first');return true}return false}
 
 /* ---------- store: shared (Netlify Function) when deployed with it, else this device ---------- */
 const API='/api/trip';
@@ -43,7 +69,7 @@ const Store=(()=>{
   return{
     mode:()=>state,
     watch(c,f){(subs[c]=subs[c]||[]).push(f);f(view(c));if(state!=='local')pull(c)},
-    async set(c,id,data){
+    async set(c,id,data){acted=Date.now();
       if(state==='shared'){try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({col:c,id,data})});if(!r.ok)throw 0;remote[c]=Object.assign({},remote[c]||{},{[id]:data});if(lget(c)[id]){delete lget(c)[id];lsSet('cota.db.'+c,loc[c])}emit(c);return true}catch(e){toast('Could not reach the shared board. Kept on this device.')}}
       lget(c)[id]=data;lsSet('cota.db.'+c,loc[c]);emit(c);return false},
     async del(c,id){
@@ -52,23 +78,22 @@ const Store=(()=>{
   }})();
 
 /* ---------- fill these in once and everyone sees them (no need for the shared board) ---------- */
-const TRIP={address:'8800 US 290 W, Apt 1412 Alister Oak Hill, Austin, TX 78736',phone:'(603) 349-9512',plate:'9YTH681',wifi:'',note:''};
+const TRIP={address:'8800 US 290 W, Apt 1412 Alister Oak Hill, Austin, TX 78736',phone:'(603) 349-9512',plate:'9YTH681',wifi:'SpectrumSetup-59',wifipass:'braveboat039',note:''};
 const nonEmpty=o=>Object.fromEntries(Object.entries(o||{}).filter(e=>e[1]));
 
 /* ---------- data ---------- */
 const DAYS=[{d:'2026-10-22',s:'Thu',n:22},{d:'2026-10-23',s:'Fri',n:23},{d:'2026-10-24',s:'Sat',n:24},{d:'2026-10-25',s:'Sun',n:25},{d:'2026-10-26',s:'Mon',n:26},{d:'2026-10-27',s:'Tue',n:27}];
 const GLANCE={
- '2026-10-22':['Gear run, early night','Costco after work; Tanmay\u2019s pickup is 1:15 am','Tanmay\u2019s 2 am landing is really Friday'],
+ '2026-10-22':['Easy evening, early night','Dinner at home, then sleep. Tanmay\u2019s pickup is 1:15 am','Tanmay\u2019s 2 am landing is really Friday'],
  '2026-10-23':['Hats, BBQ, Mercedes, Maroon 5','Terry Black\u2019s, Mercedes fan hub, Hetvi at 4 pm, concert at COTA','Fan hub queue vs the 3:15 pm airport run'],
  '2026-10-24':['Cook, qualifying, Post Malone, cocktails','Home lunch 1 pm, COTA 3:15 pm, nightcap 11:30 pm','About 4 hours of sleep before the 5 am alarm'],
  '2026-10-25':['Race day at Turn 3\u20134 lawn','Leave 6:15 am, race 3 pm, Powder Room 8 pm','Exit from COTA vs the 8 pm booking'],
- '2026-10-26':['Hetvi 3 am, Ambika 11 am, early Oasis','Tanmay drives, you work, Tanmay flies at 9 pm','Oasis sunset (6:50) clashes with the 9 pm flight'],
+ '2026-10-26':['Hetvi 3 am, Ambika 11 am, early Oasis','Tanmay drives, Patne works, Tanmay flies at 9 pm','Oasis sunset (6:50) clashes with the 9 pm flight'],
  '2026-10-27':['Back to work','Everyone is home. Write your notes on the After page','None']};
 // [date,time,title,note,who,tag]
 const S=(d,t,title,note,who,tag)=>({d:'2026-10-'+d,t,title,note:note||'',who:who==='all'?PID.slice():[...who].map(x=>SH[x]),tag:tag||'cota'});
 const EV=[
-S(22,'08:00','Chaitrali at work, Bee Cave','Until 4:30 pm.','c','work'),
-S(22,'17:00','Costco gear run','Costco South Austin, 4301 W William Cannon. Chairs, ponchos, sunscreen, earplugs. Full list on Need-to-know.','c','food'),
+S(22,'08:00','Patne at work, Bee Cave','Until 4:30 pm.','c','work'),
 S(22,'19:00','Dinner at home, then an early night','Tanmay\u2019s pickup is at 1:15 am.','c','food'),
 S(23,'01:15','Leave for AUS to get Tanmay','Overnight pickup, about 25 min each way. Home by about 3:00 am.','c','travel'),
 S(23,'02:00','Tanmay lands at AUS (flight TBC)','Landing 2:00 am Friday. Add his flight on the Crew page.','ct','tbd'),
@@ -85,15 +110,15 @@ S(23,'23:00','Anu\u2019s late bus arrives (TBC)','Pickup plan needed: the others
 S(23,'23:45','Leave COTA, home around midnight','','cth','travel'),
 S(24,'09:00','Slow morning and breakfast','Friday ends near midnight.','cthn','food'),
 S(24,'09:45','Cook-along for the home lunch','One big pot, with a separate egg dish since Hetvi and Anu do not eat eggs. Menu vote is on the Food & Texas page.','cthn','food'),
-S(24,'11:30','Chaitrali leaves to pick up Ambika','Her bus arrives at noon. Stop is TBC: Eastside Bus Plaza or downtown on 9th St. Buses run late. The others finish lunch.','c','travel'),
-S(24,'13:00','Home-cooked lunch for all five','The one meal Chaitrali cooks for everyone.','all','food'),
+S(24,'11:30','Patne leaves to pick up Ambika','Her bus arrives at noon. Stop is TBC: Eastside Bus Plaza or downtown on 9th St. Buses run late. The others finish lunch.','c','travel'),
+S(24,'13:00','Home-cooked lunch for all five','The one meal Patne cooks for everyone.','all','food'),
 S(24,'13:45','Leave for COTA','45\u201360 min with traffic.','all','travel'),
 S(24,'15:15','Inside COTA, scout Turn 3\u20134 lawn','Walk from the gate to the lawn and time it for Sunday.','all','cota'),
 S(24,'16:00','Qualifying','From the Turn 3\u20134 lawn.','all','cota'),
 S(24,'17:15','Dinner at COTA','$25\u201330 each.','all','food'),
 S(24,'19:30','Post Malone on the Super Stage (time TBA)','Lawn opens about 90 min after track action ends. If he has not started by 9:30 pm, leave at 10:30 pm.','all','cota'),
 S(24,'21:45','Head to the car','Leave at the end of the set. Exit queue is 45\u201390 min.','all','travel'),
-S(24,'23:30','Cocktail night at Chaitrali\u2019s','A short nightcap, about an hour. Sunday\u2019s alarm is 5:00 am. Mix the drinks on Saturday morning so nobody makes them at midnight.','all','fun'),
+S(24,'23:30','Cocktail night at Patne\u2019s','A short nightcap, about an hour. Sunday\u2019s alarm is 5:00 am. Mix the drinks on Saturday morning so nobody makes them at midnight.','all','fun'),
 S(25,'05:00','Wake up, breakfast at home','No outside food at COTA.','all','food'),
 S(25,'05:45','Load the car','Chairs, hats, ponchos, sunscreen (plastic bottle), empty bottles, power banks, ID. Anu carries her own bag.','all','travel'),
 S(25,'06:15','Leave Oak Hill','Plan 55\u201390 min to the lot.','all','travel'),
@@ -108,11 +133,11 @@ S(25,'19:00','Anu leaves with her boyfriend (TBC)','He picks her up from COTA. A
 S(25,'19:30','Out of the lot (target)','Exit takes 60\u2013120 min. Call Powder Room if you are running late.','cth','travel'),
 S(25,'20:00','Cocktails at Powder Room (booked)','301 W 5th St, downtown. About 25 min from COTA, so 8:00 is tight. Ask them to hold the table until 8:45 or move it to 9:00. The driver stays sober.','cth','tbd'),
 S(25,'22:30','Head home','Hetvi\u2019s alarm is 2:45 am.','cth','travel'),
-S(26,'02:45','Hetvi up, Tanmay drives her at 3:00 am','Flight 5:30 am, at the airport by 3:30. Chaitrali sleeps.','th','travel'),
-S(26,'07:15','Chaitrali and Tanmay leave for Bee Cave','Tanmay drops her at the office and takes the car back.','ct','travel'),
-S(26,'08:00','Chaitrali at work','Until 4:30 pm.','c','work'),
+S(26,'02:45','Hetvi up, Tanmay drives her at 3:00 am','Flight 5:30 am, at the airport by 3:30. Patne sleeps.','th','travel'),
+S(26,'07:15','Patne and Tanmay leave for Bee Cave','Tanmay drops her at the office and takes the car back.','ct','travel'),
+S(26,'08:00','Patne at work','Until 4:30 pm.','c','work'),
 S(26,'10:00','Tanmay drives Ambika to her bus','Her bus leaves Austin at 11:00 am, so arrive by 10:30. Stop TBC.','ta','tbd'),
-S(26,'16:45','Leave for The Oasis on Lake Travis','6550 Comanche Trail. Tanmay picks Chaitrali up from Bee Cave at 4:15 pm.','ct','fun'),
+S(26,'16:45','Leave for The Oasis on Lake Travis','6550 Comanche Trail. Tanmay picks Patne up from Bee Cave at 4:15 pm.','ct','fun'),
 S(26,'17:20','Arrive at The Oasis','No reservations. Get a deck table.','ct','fun'),
 S(26,'18:15','Leave The Oasis for AUS','Sunset is 6:50 pm, but a 9 pm flight means leaving by about 6:15 and missing the bell. If his flight is later, stay for it. About 40 min to the airport.','ct','travel'),
 S(26,'21:00','Tanmay\u2019s flight (about 9 pm, confirm)','','t','tbd'),
@@ -124,7 +149,7 @@ const dayLabel=d=>{const x=DAYS.find(y=>y.d===d);return x?x.s+' Oct '+x.n:d};
 const hm=t=>{let [h,m]=t.split(':').map(Number);const ap=h>=12?'pm':'am';h=h%12||12;return h+':'+String(m).padStart(2,'0')+' '+ap};
 function nowCT(){const p={};new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return p.year+'-'+p.month+'-'+p.day+' '+(p.hour==='24'?'00':p.hour)+':'+p.minute}
 /* ---------- nav (one HTML file per page) ---------- */
-const VIEWS=[['index','Home','Countdown, now and next'],['schedule','Schedule','Day by day, filter by person'],['crew','Crew','Flights, buses, pickups'],['info','Need-to-know','Address, phone, plate, gear list'],['cota','COTA','Map, timetable, rules'],['texas','Food & Texas','BBQ, cocktails, the home-cooked lunch'],['play','Play','Predictions, awards, bingo, playlist'],['after','After','Write how the trip went']];
+const VIEWS=[['index','Home','Countdown, quests, note to the host'],['schedule','Schedule','Day by day, filter by person'],['crew','Crew','Flights, buses, pickups'],['info','Pack & Info','Address, Wi-Fi, what to bring'],['cota','COTA','Map, timetable, rules'],['texas','Food & Texas','BBQ, cocktails, the home-cooked lunch'],['cocktails','Cocktails','Pick your drinks for cocktail night'],['play','Play','Predictions, awards, bingo, playlist'],['photos','Photos','Post 2 photos, build the collage'],['leaderboard','Standings','Championship leaderboard'],['after','After','Write how the trip went']];
 const PAGE=document.body.dataset.page||'index';
 $('#tabs').innerHTML=VIEWS.map(v=>`<a href="${v[0]}.html"${v[0]===PAGE?' aria-current="page"':''}>${v[1]}</a>`).join('');
 $('#navgrid').innerHTML=VIEWS.slice(1).map(v=>`<a href="${v[0]}.html"><div class="card"><h3>${v[1]}</h3><p>${v[2]}</p></div></a>`).join('');
@@ -133,9 +158,9 @@ $('#navgrid').innerHTML=VIEWS.slice(1).map(v=>`<a href="${v[0]}.html"><div class
 /* ---------- home ---------- */
 const LIGHTS=Date.parse('2026-10-25T20:00:00Z');
 function tick(){const ms=LIGHTS-Date.now(),el=$('#count');
-  if(ms<=0){el.innerHTML='<div><b>Lights out</b><span>It has begun</span></div>';return}
-  const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);
-  el.innerHTML=`<div><b>${d}</b><span>days</span></div><div><b>${h}</b><span>hours</span></div><div><b>${m}</b><span>min</span></div><div style="background:none;text-align:left;align-self:center"><span style="font-size:.78rem">until lights out,<br>Sun Oct 25, 3:00 pm</span></div>`}
+  if(ms<=0){el.innerHTML='<div class="t"><b>GO!</b><span>Lights out</span></div>';return}
+  const d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);
+  el.innerHTML=`<div class="t"><b>${d}</b><span>days</span></div><div class="t"><b>${h}</b><span>hours</span></div><div class="t"><b>${m}</b><span>min</span></div><div class="t"><b>${s}</b><span>sec</span></div>`}
 function nowNext(){const k=nowCT(),i=EV.findIndex(e=>(e.d+' '+e.t)>k),box=$('#nownext');
   const line=e=>`<li style="display:flex;gap:10px;align-items:baseline"><span class="mono small" style="min-width:92px">${dayLabel(e.d).replace(' Oct','')} ${hm(e.t)}</span><span>${esc(e.title)}</span></li>`;
   if(i===-1){box.innerHTML='<h3>That’s a wrap</h3><p class="small" style="margin-top:6px">Everyone is home. Write your notes on the After page.</p>';return}
@@ -161,14 +186,14 @@ document.addEventListener('click',e=>{
 
 /* ---------- crew ---------- */
 const LEGS={
- tanmay:[['in','Arrive','Fri Oct 23','2:00 am (overnight)','Flight','AUS airport. Chaitrali picks up; leave Oak Hill 1:15 am.'],['out','Depart','Mon Oct 26','About 9:00 pm (confirm)','Flight','Leave The Oasis about 6:15 pm for the airport.']],
- hetvi:[['in','Arrive','Fri Oct 23','About 4:00 pm','Flight','AUS airport. Chaitrali and Tanmay pick up.'],['out','Depart','Mon Oct 26','5:30 am','Flight','Leave the house 3:00 am, airport by 3:30. Tanmay drives.']],
+ tanmay:[['in','Arrive','Fri Oct 23','2:00 am (overnight)','Flight','AUS airport. Patne picks up; leave Oak Hill 1:15 am.'],['out','Depart','Mon Oct 26','About 9:00 pm (confirm)','Flight','Leave The Oasis about 6:15 pm for the airport.']],
+ hetvi:[['in','Arrive','Fri Oct 23','About 4:00 pm','Flight','AUS airport. Patne and Tanmay pick up.'],['out','Depart','Mon Oct 26','5:30 am','Flight','Leave the house 3:00 am, airport by 3:30. Tanmay drives.']],
  ambika:[['in','Arrive','Sat Oct 24','12:00 pm','Bus','Stop TBC: Eastside Bus Plaza or downtown 9th St.'],['out','Depart','Mon Oct 26','11:00 am','Bus','Stop TBC. Tanmay drives her; arrive by 10:30.']],
  anu:[['in','Arrive','Fri Oct 23','Late night (TBC)','Bus','Arrives during Maroon 5. Pickup plan TBC.'],['out','Depart','Sun Oct 25','About 7:00 pm','Boyfriend picks up','Meeting point at COTA TBC.']]};
-let legs={},editLeg='';
+let editLeg='';
 function renderCrew(){
   $('#crewgrid').innerHTML=PEOPLE.map(p=>{
-    if(p.id==='chaitrali')return `<div class="card person"><header>${dot(p.id)}<div><h3>${p.name}</h3><span class="small">Host</span></div></header><p class="small">Home base in Oak Hill. Drives the Mazda CX-5 on COTA days. Works 8–4:30 in Bee Cave on Thu, Mon and Tue.</p></div>`;
+    if(p.id==='patne')return `<div class="card person"><header>${dot(p.id)}<div><h3>${p.name}</h3><span class="small">Host</span></div></header><p class="small">Home base in Oak Hill. Drives the Mazda CX-5 on COTA days. Works 8–4:30 in Bee Cave on Thu, Mon and Tue.</p></div>`;
     return `<div class="card person"><header>${dot(p.id)}<div><h3>${p.name}</h3><span class="small">Guest</span></div></header>${LEGS[p.id].map(L=>{
       const id=p.id+'-'+L[0],sv=legs[id]||{},when=sv.time||L[3],where=sv.where||'',ref=sv.ref||'',note=sv.note||L[5];
       if(editLeg===id)return `<div class="leg" data-leg="${id}"><div class="lh"><b>${L[1]} · ${L[2]}</b></div><div class="stack" style="margin-top:6px"><div><label>${L[4]==='Flight'||L[4]==='Bus'?L[4]+' number':'Name or car'}</label><input type="text" data-k="ref" value="${esc(ref)}" placeholder="e.g. AA 1234"></div><div><label>Time</label><input type="text" data-k="time" value="${esc(sv.time||'')}" placeholder="${esc(L[3])}"></div><div><label>${L[4]==='Flight'?'Terminal or airline':'Pickup or stop'}</label><input type="text" data-k="where" value="${esc(where)}"></div><div><label>Notes</label><input type="text" data-k="note" value="${esc(sv.note||'')}" placeholder="${esc(L[5])}"></div><div class="row"><button class="btn" data-save="${id}">Save</button><button class="btn alt" data-cancel="1">Cancel</button></div></div></div>`;
@@ -178,10 +203,10 @@ document.addEventListener('click',async e=>{
   const ed=e.target.closest('[data-edit]');if(ed){editLeg=ed.dataset.edit;renderCrew();return}
   if(e.target.closest('[data-cancel]')){editLeg='';renderCrew();return}
   const sv=e.target.closest('[data-save]');if(sv){const box=sv.closest('[data-leg]'),d={};$$('input',box).forEach(i=>d[i.dataset.k]=i.value.trim());editLeg='';await Store.set('legs',sv.dataset.save,d);toast('Saved')}});
-Store.watch('legs',m=>{legs=m;if(!editLeg)renderCrew()});
+Store.watch('legs',m=>{legs=m;if(!editLeg)renderCrew();refreshXP()});
 
 /* ---------- info ---------- */
-const HF=[['address','Address','Add address'],['phone','Phone','Add phone'],['plate','Plate','Add plate'],['wifi','Wi-Fi','Name and password'],['note','House notes','Parking, door, shoes off, etc.']];
+const HF=[['address','Address','Add address'],['phone','Phone','Add phone'],['plate','Plate','Add plate'],['wifi','Wi-Fi network','Network name'],['wifipass','Wi-Fi password','Password'],['note','House notes','Parking, door, shoes off, etc.']];
 let host=Object.assign({},TRIP),editHost=false;
 const m0=()=>host;
 function renderHost(){
@@ -194,57 +219,45 @@ document.addEventListener('click',async e=>{
   if(e.target.id==='hedit'){editHost=true;renderHost()}
   if(e.target.id==='hcancel'){editHost=false;renderHost()}
   if(e.target.id==='hsave'){const d=Object.assign({},m0());$$('[data-h]').forEach(i=>d[i.dataset.h]=i.value.trim());editHost=false;await Store.set('host','card',d);toast('Saved')}});
-const GEAR=['5 collapsible camp chairs','5 small hand-held umbrellas','5 cheap ponchos','2 bottles of sunscreen (plastic, no aerosol)','Picnic blanket','Foam earplugs for everyone','Cooling towels','5 empty plastic bottles, 32 oz or less','2 power banks','Small cooler for the car only','Breakfast food for Sunday 5 am'];
-function renderGear(){const st=lsGet('cota.gear',{});$('#gear').innerHTML=GEAR.map((g,i)=>`<label style="display:flex;gap:10px;align-items:center;margin:0;color:var(--ink);font-size:.95rem"><input type="checkbox" data-g="${i}" ${st[i]?'checked':''}> <span style="${st[i]?'text-decoration:line-through;opacity:.6':''}">${g}</span></label>`).join('')}
-document.addEventListener('change',e=>{if(e.target.dataset.g!=null){const st=lsGet('cota.gear',{});st[e.target.dataset.g]=e.target.checked;lsSet('cota.gear',st);renderGear()}});
-
 /* ---------- food & texas ---------- */
 const TEX=[
  ['Fri 11:45 am','Terry Black’s BBQ','1003 Barton Springs Rd. Opens at 11, so expect a line by noon. With Tanmay.','Terry Black’s BBQ 1003 Barton Springs Rd Austin','food'],
  ['Fri 1:15 pm','Mercedes F1 Fan Hub','400 Congress Ave, downtown. Free, Oct 22\u201325. Pit-stop challenge, simulators, show car. Hours not published; entry is by queue. With Tanmay.','Mercedes F1 Fan Hub 400 Congress Ave Austin','tbd'],
  ['Sat–Sun','Turn 3–4 GA lawn','Our home on the grass for qualifying and the race.','Circuit of the Americas Turn 3','cota'],
- ['Sat 1:00 pm','Home-cooked lunch','Everyone at the table, cooked by Chaitrali and helpers.',null,'food'],
+ ['Sat 1:00 pm','Home-cooked lunch','Everyone at the table, cooked by Patne and helpers.',null,'food'],
  ['Sat 11:30 pm','Cocktail night at home','Short nightcap after Post Malone. All five.',null,'fun'],
  ['Sun 8:00 pm','Powder Room','301 W 5th St, downtown. Cocktails booked for the group.','Powder Room 301 W 5th St Austin','fun'],
  ['Mon 5:20 pm','The Oasis on Lake Travis','Early dinner on the deck, 6550 Comanche Trail, before Tanmay\u2019s 9 pm flight. Sunset is 6:50, so the bell is missed unless his flight is later.','The Oasis on Lake Travis 6550 Comanche Trail Austin','fun']];
 $('#texgrid').innerHTML=TEX.map(t=>`<div class="card stack"><div class="row" style="justify-content:space-between"><span class="eyebrow">${t[0]}</span><span class="tag t-${t[4]}">${TAGN[t[4]]}</span></div><h3>${t[1]}</h3><p class="small">${t[2]}</p>${t[3]?`<a class="small" href="${maps(t[3])}" target="_blank" rel="noopener">Open in Maps</a>`:''}</div>`).join('');
-const MENU=['Biryani + raita','Pulao + raita','Dal, rice and sabzi','Tex-Mex night','Chaitrali decides'];
-let menu={};
+const MENU=['Biryani + raita','Pulao + raita','Dal, rice and sabzi','Tex-Mex night','Patne decides'];
 function renderMenu(){const cnt={};Object.values(menu).forEach(v=>cnt[v.choice]=(cnt[v.choice]||0)+1);
   $('#menuvote').innerHTML=MENU.map(m=>`<button class="chip" data-menu="${esc(m)}" aria-pressed="${ME&&menu[ME]&&menu[ME].choice===m}">${m} · ${cnt[m]||0}</button>`).join('')}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-menu]');if(b){if(needMe())return;Store.set('menu',ME,{choice:b.dataset.menu})}});
-Store.watch('menu',m=>{menu=m;renderMenu()});
+Store.watch('menu',m=>{menu=m;renderMenu();refreshXP()});
 Store.watch('host',m=>{host=Object.assign({},TRIP,nonEmpty(m.card));if(!editHost)renderHost()});
 
 /* ---------- play ---------- */
 const REVEAL=LIGHTS+2.5*36e5;
-let preds={},awards={},songs={};
 function renderPreds(){
   const mine=preds[ME]||{},open=Date.now()<LIGHTS;
   const rows=PEOPLE.map(p=>{const v=preds[p.id];return `<tr><td>${dot(p.id)}</td><td>${v?(Date.now()>=REVEAL||p.id===ME?`${esc(v.winner||'-')}<div class="small">Podium: ${esc(v.podium||'-')} · Safety car: ${esc(v.sc||'-')}</div>`:'<span class="pill ok">Locked in</span>'):'<span class="small">No pick yet</span>'}</td></tr>`}).join('');
   $('#preds').innerHTML=`${open?`<div class="stack"><div><label>Race winner</label><input type="text" id="pw" value="${esc(mine.winner||'')}" placeholder="Driver name"></div><div><label>Podium (three names)</label><input type="text" id="pp" value="${esc(mine.podium||'')}" placeholder="1st, 2nd, 3rd"></div><div><label>Safety car?</label><select class="f" id="ps"><option value="">Pick</option><option ${mine.sc==='Yes'?'selected':''}>Yes</option><option ${mine.sc==='No'?'selected':''}>No</option></select></div><div><button class="btn" id="psave">Lock in my picks</button></div></div>`:'<p class="small">Picks are closed. Lights out has passed.</p>'}<div class="scroll" style="margin-top:12px"><table><tbody>${rows}</tbody></table></div><p class="small" style="margin-top:6px">Everyone’s picks are revealed after the race.</p>`}
 document.addEventListener('click',e=>{if(e.target.id==='psave'){if(needMe())return;Store.set('preds',ME,{winner:$('#pw').value.trim(),podium:$('#pp').value.trim(),sc:$('#ps').value});toast('Locked in')}});
-Store.watch('preds',m=>{preds=m;renderPreds()});
+Store.watch('preds',m=>{preds=m;renderPreds();refreshXP()});
 const CATS=['Best co-pilot','Worst two-stepper','Most likely to lose the hat','Best food pick of the trip','Loudest cheerer','Trip MVP'];
 function renderAwards(){
   const mine=(awards[ME]||{}).v||{};
   $('#awards').innerHTML=CATS.map((c,k)=>{const cnt={};Object.values(awards).forEach(a=>{const w=(a.v||{})[k];if(w)cnt[w]=(cnt[w]||0)+1});const mx=Math.max(1,...Object.values(cnt));
     return `<div><div class="row" style="justify-content:space-between"><b>${c}</b><select class="f" data-aw="${k}" style="width:auto"><option value="">Vote</option>${PEOPLE.map(p=>`<option value="${p.id}" ${mine[k]===p.id?'selected':''}>${p.name}</option>`).join('')}</select></div>${PID.filter(i=>cnt[i]).map(i=>`<div class="bar-row"><span>${P[i].name}</span><i style="width:${cnt[i]/mx*100}%"></i><span>${cnt[i]}</span></div>`).join('')}</div>`}).join('')}
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset.aw!=null){if(needMe()){t.value='';return}const v=Object.assign({},(awards[ME]||{}).v||{});if(t.value)v[t.dataset.aw]=t.value;else delete v[t.dataset.aw];Store.set('awards',ME,{v})}});
-Store.watch('awards',m=>{awards=m;renderAwards()});
-const BINGO=['Cowboy hat in the wild','Someone says y’all','Truck bigger than the CX-5','Longhorn spotted','Brisket tasted','Texas flag on a building','Armadillo (a sign counts)','Lone Star beer','Queso','Boot shop','Country song on the radio','Sunburn line','Bluebonnet merch','FREE ★','Live band','Lost in the parking lot','F1 fan in a rival kit','Two-step attempted','Sunset over water','Chair breaks or pops','Someone loses the hat','Giant sign for BBQ','Earplugs rescue','Selfie with the car','Gas station snack run'];
-function renderBingo(){const st=lsGet('cota.bingo',{13:true});st[13]=true;
-  $('#bingo').innerHTML=BINGO.map((b,i)=>`<button data-b="${i}" class="${st[i]?'on':''}">${b}</button>`).join('');
-  const L=[];for(let r=0;r<5;r++){L.push([0,1,2,3,4].map(c=>r*5+c));L.push([0,1,2,3,4].map(c=>c*5+r))}L.push([0,6,12,18,24],[4,8,12,16,20]);
-  const n=L.filter(l=>l.every(i=>st[i])).length;$('#bingomsg').textContent=n?`${n} line${n>1?'s':''} done. Bingo!`:`${Object.values(st).filter(Boolean).length} of 25 spotted`}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-b]');if(b){const st=lsGet('cota.bingo',{});st[b.dataset.b]=!st[b.dataset.b];lsSet('cota.bingo',st);renderBingo()}});
+Store.watch('awards',m=>{awards=m;renderAwards();refreshXP()});
 function renderSongs(){const ids=Object.keys(songs).sort((a,b)=>songs[a].ts-songs[b].ts);
   $('#songs').innerHTML=ids.length?ids.map(i=>`<li>${esc(songs[i].title)} <span class="small">${songs[i].by&&P[songs[i].by]?'· '+P[songs[i].by].name:''}</span></li>`).join(''):'<li class="small" style="list-style:none;margin-left:-20px">No songs yet.</li>'}
 document.addEventListener('click',e=>{if(e.target.id==='songadd'){const v=$('#songin').value.trim();if(!v)return;Store.set('songs','s'+Date.now().toString(36),{title:v,by:ME,ts:Date.now()});$('#songin').value=''}});
-Store.watch('songs',m=>{songs=m;renderSongs()});
+Store.watch('songs',m=>{songs=m;renderSongs();refreshXP()});
 
 /* ---------- after ---------- */
-let jr={},stars=0,jdraft={};
+let stars=0,jdraft={};
 const JF=[['best','Best moment','The one you will retell'],['funny','Funniest moment',''],['food','Favourite thing you ate',''],['change','What should we change next time?',''],['note','One line for the group','']];
 function renderJournal(){
   if(!ME){$('#journalform').innerHTML='<h3>Your page</h3><p class="small" style="margin-top:6px">Pick who you are at the top right to write yours.</p>';}
@@ -253,17 +266,123 @@ function renderJournal(){
   const done=PID.filter(i=>jr[i]&&jr[i].ts).length,unlocked=!!(ME&&jr[ME]&&jr[ME].ts)||done===5;
   $('#wallcount').textContent=done+' of 5 posted';
   $('#wall').innerHTML=PEOPLE.map(p=>{const j=jr[p.id];if(!j||!j.ts)return `<div class="card plain"><div class="row" style="gap:8px">${dot(p.id)}<b>${p.name}</b></div><p class="small" style="margin-top:6px">Has not written yet.</p></div>`;
-    const body=`<div style="color:var(--gold);font-size:1.2rem">${'★'.repeat(j.stars||0)}<span style="color:var(--line)">${'★'.repeat(5-(j.stars||0))}</span></div>`+JF.filter(f=>j[f[0]]).map(f=>`<p style="margin-top:6px"><span class="small">${f[1]}</span><br>${esc(j[f[0]])}</p>`).join('');
+    const body=`<div style="color:var(--yellow);font-size:1.2rem">${'★'.repeat(j.stars||0)}<span style="color:#D9C7A5">${'★'.repeat(5-(j.stars||0))}</span></div>`+JF.filter(f=>j[f[0]]).map(f=>`<p style="margin-top:6px"><span class="small">${f[1]}</span><br>${esc(j[f[0]])}</p>`).join('');
     return `<div class="card"><div class="row" style="gap:8px">${dot(p.id)}<b>${p.name}</b></div><div class="${unlocked||p.id===ME?'':'blur'}" style="margin-top:6px">${body}</div>${unlocked||p.id===ME?'':'<p class="small" style="margin-top:6px">Post yours to unlock.</p>'}</div>`}).join('')}
 document.addEventListener('input',e=>{if(e.target.dataset.j)jdraft[e.target.dataset.j]=e.target.value});
 document.addEventListener('click',async e=>{
   const s=e.target.closest('[data-star]');if(s){stars=+s.dataset.star;renderJournal();return}
   if(e.target.id==='jsave'){if(needMe())return;const d={stars:stars||(jr[ME]||{}).stars||0,ts:Date.now()};JF.forEach(f=>{const el=$(`[data-j="${f[0]}"]`);d[f[0]]=el?el.value.trim():''});await Store.set('journal',ME,d);try{const fd=new URLSearchParams({'form-name':'journal',person:P[ME].name,stars:d.stars});JF.forEach(f=>fd.set(f[0],d[f[0]]));fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd.toString()}).catch(()=>{})}catch(e){}jdraft={};stars=0;toast('Posted')}
   if(e.target.id==='jcopy'&&ME){const m=jr[ME]||{};const d={};JF.forEach(f=>{const el=$(`[data-j="${f[0]}"]`);d[f[0]]=el?el.value.trim():(m[f[0]]||'')});const st=stars||m.stars||0;copy(`${P[ME].name}'s Texas F1 trip\n${'★'.repeat(st)}${'☆'.repeat(5-st)}\n`+JF.filter(f=>d[f[0]]).map(f=>f[1]+': '+d[f[0]]).join('\n'))}});
-Store.watch('journal',m=>{jr=m;renderJournal()});
+Store.watch('journal',m=>{jr=m;renderJournal();refreshXP()});
+
+/* ---------- progress (pack list + bingo), shared ---------- */
+const myProg=()=>JSON.parse(JSON.stringify(prog[ME]||{packed:{},bingo:{}}));
+function renderPack(){const mine=((prog[ME]||{}).packed)||{};let i=0;
+  $('#pack').innerHTML=PACK.map(g=>`<div><div class="eyebrow" style="margin:4px 0">${g[0]}</div>`+g[1].map(it=>{const k=i++;return `<label style="display:flex;gap:10px;align-items:flex-start;margin:0 0 6px;color:var(--ink);font-size:1rem;font-weight:600"><input type="checkbox" data-pk="${k}" ${mine[k]?'checked':''}> <span style="${mine[k]?'text-decoration:line-through;opacity:.6':''}">${it}</span></label>`}).join('')+`</div>`).join('');
+  const n=cnt(mine);$('#packmsg').textContent=ME?`${n} of ${PACKITEMS.length} packed${n>=PACKITEMS.length?'. Packed and ready, +5 bonus!':''}`:'Pick your driver at the top to save your ticks.'}
+document.addEventListener('change',e=>{const k=e.target.dataset.pk;if(k==null)return;if(needMe()){e.target.checked=false;return}const p=myProg();p.packed=p.packed||{};p.packed[k]=e.target.checked;Store.set('prog',ME,p)});
+function renderBingo(){const st=((prog[ME]||{}).bingo)||{};
+  $('#bingo').innerHTML=BINGO.map((b,i)=>`<button data-b="${i}" class="${i===12||st[i]?'on':''}">${b}</button>`).join('');
+  const n=bingoLines(st);$('#bingomsg').textContent=n?`${n} line${n>1?'s':''} done. Bingo!`:`${cnt(st)} squares spotted`}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-b]');if(!b)return;if(needMe())return;const i=+b.dataset.b;if(i===12)return;const p=myProg();p.bingo=p.bingo||{};p.bingo[i]=!p.bingo[i];Store.set('prog',ME,p)});
+Store.watch('prog',m=>{prog=m;renderPack();renderBingo();refreshXP()});
+
+/* ---------- points, header pill, home pit pass, standings ---------- */
+function refreshXP(){
+  if(ME){const t=score(ME).total,L=levelOf(t).name;
+    if(lastTotal!==null&&t>lastTotal&&Date.now()-acted<4000){toast(`+${t-lastTotal} pts!`);const x=$('#xp');x.classList.remove('pop');void x.offsetWidth;x.classList.add('pop');if(L!==lastLevel)setTimeout(()=>toast(`Level up: ${L}!`),1500)}
+    lastTotal=t;lastLevel=L}
+  renderXP();renderPit();renderBoard();renderQuestList()}
+function renderXP(){const x=$('#xp');if(!ME){x.textContent='Pick your driver →';return}const t=score(ME).total;x.textContent=`${levelOf(t).name} · ${t} pts`}
+function meter(t){const L=levelOf(t),N=nextLevel(t);const pct=N?Math.round((t-L.at)/(N.at-L.at)*100):100;return `<div class="meter"><i style="width:${Math.max(6,pct)}%"></i></div><div class="small" style="margin-top:4px">${N?`${N.at-t} pts to ${N.name}`:'You are the champion!'}</div>`}
+function renderPit(){const box=$('#xpcard');if(!ME){box.innerHTML='<div class="row" style="justify-content:space-between"><div><h3>Your pit pass</h3><p class="small">Pick your driver at the top right to start earning points.</p></div><a class="btn" href="leaderboard.html">See standings</a></div>';return}
+  const s=score(ME),L=levelOf(s.total),todo=s.rows.filter(r=>r.pts<r.max).slice(0,3);
+  box.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-end"><div><div class="eyebrow">${P[ME].name}’s pit pass</div><div class="lvl">${L.name}</div></div><div class="lvl" style="color:var(--blue)">${s.total} pts</div></div><div style="margin:8px 0">${meter(s.total)}</div>`+(todo.length?`<div class="eyebrow" style="margin-top:8px">Next quests</div>`+todo.map(r=>`<a class="quest" href="${r.to}"><span class="ck"></span><span class="q">${r.label}</span><span class="pts">+${r.max-r.pts}</span></a>`).join(''):'<p class="small">Every quest done. Legend.</p>')+`<div style="margin-top:10px"><a class="btn alt" href="leaderboard.html">Championship standings</a></div>`}
+function standings(){return PEOPLE.map(p=>({p,s:score(p.id)})).sort((a,b)=>b.s.total-a.s.total||a.p.name.localeCompare(b.p.name))}
+function renderBoard(){const st=standings();
+  $('#podium').innerHTML=[st[1],st[0],st[2]].map((x,i)=>{const pos=[2,1,3][i];return `<div class="st p${pos}"><div class="pos">P${pos}</div>${dot(x.p.id)}<div class="nm">${x.p.name}</div><div class="pt">${x.s.total}</div></div>`}).join('');
+  const html=st.map((x,i)=>`<div class="row-board"><div class="p">${i+1}</div><div><div class="row" style="gap:8px">${dot(x.p.id)}<b>${x.p.name}</b><span class="pill">${levelOf(x.s.total).name}</span></div><div>${badgesOf(x.s).map(b=>`<span class="badge">${b}</span>`).join('')}</div></div><div class="tp">${x.s.total}</div></div>`).join('');
+  $('#board').innerHTML=html;
+  $('#miniboard').innerHTML=st.map((x,i)=>`<div class="row-board" style="padding:6px 0"><div class="p" style="font-size:1.5rem">${i+1}</div><div class="row" style="gap:8px">${dot(x.p.id)}<b>${x.p.name}</b></div><div class="tp" style="font-size:1.4rem">${x.s.total}</div></div>`).join('');
+  $('#rules').innerHTML='<table><thead><tr><th>Quest</th><th>Max points</th></tr></thead><tbody>'+QUESTS.map(q=>`<tr><td><a href="${q.to}">${q.label}</a></td><td>${q.max}</td></tr>`).join('')+'<tr><td>Host bonus (Patne awards for race calls, best two-step, etc.)</td><td>any</td></tr></tbody></table>';
+  const hb=$('#hostbonus');if(ME==='patne'){hb.hidden=false;$('#hostbonus-body').innerHTML=PEOPLE.map(p=>`<div class="bal"><span class="row" style="gap:8px">${dot(p.id)}${p.name} <span class="pill">${(bonus[p.id]||{}).pts||0} bonus</span></span><span class="row"><button class="chip" data-bonus="${p.id}|-5">-5</button><button class="chip" data-bonus="${p.id}|5">+5</button><button class="chip" data-bonus="${p.id}|10">+10</button></span></div>`).join('')}else hb.hidden=true}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-bonus]');if(!b)return;const [p,d]=b.dataset.bonus.split('|');Store.set('bonus',p,{pts:Math.max(0,((bonus[p]||{}).pts||0)+(+d))})});
+function renderQuestList(){const box=$('#questlist');if(!ME){box.innerHTML='<p class="small">Pick your driver at the top right to see your quests.</p>';return}
+  const s=score(ME);box.innerHTML=s.rows.map(r=>`<a class="quest${r.pts>=r.max?' done':''}" href="${r.to}"><span class="ck">${r.pts>=r.max?'✓':''}</span><span class="q">${r.label}</span><span class="pts">${r.pts}/${r.max}</span></a>`).join('')+(s.bonus?`<div class="quest"><span class="ck" style="background:var(--yellow)"></span><span class="q">Host bonus</span><span class="pts">+${s.bonus}</span></div>`:'')}
+Store.watch('bonus',m=>{bonus=m;refreshXP()});
+
+/* ---------- host note ---------- */
+function renderNotes(){const box=$('#hn-list');if(!ME){box.innerHTML='';return}
+  const all=Object.entries(notes).map(([id,n])=>Object.assign({id},n)).sort((a,b)=>b.ts-a.ts),show=ME==='patne'?all:all.filter(n=>n.by===ME);
+  box.innerHTML=(show.length?`<div class="eyebrow" style="margin:10px 0 4px">${ME==='patne'?'Notes for you':'Notes you sent'}</div>`:'')+show.map(n=>`<div class="bal" style="align-items:flex-start"><div><b>${esc(n.from||'Someone')}</b> <span class="small">${new Date(n.ts).toLocaleString('en-US',{timeZone:'America/Chicago',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span><div>${esc(n.text)}</div></div></div>`).join('')}
+document.addEventListener('click',async e=>{if(e.target.id!=='hn-send')return;const t=$('#hn-text').value.trim();if(!t){toast('Write something first');return}
+  const from=$('#hn-from').value.trim()||(ME?P[ME].name:'Someone');
+  await Store.set('notes','n'+Date.now().toString(36),{from,by:ME,text:t,ts:Date.now()});
+  try{fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({'form-name':'host-note',from,text:t}).toString()}).catch(()=>{})}catch(x){}
+  $('#hn-text').value='';toast('Sent to Patne');});
+Store.watch('notes',m=>{notes=m;renderNotes();refreshXP()});
+function prefillFrom(){const f=$('#hn-from');if(f&&!f.value&&ME)f.value=P[ME].name}
+
+/* ---------- cocktails ---------- */
+function renderCocktails(){const grid=$('#cocktail-grid');if(!window.COCKTAILS)return;
+  const mine=cocktails[ME]||{picks:[],fav:'',dry:false};
+  $('#cocktail-sample').hidden=!window.COCKTAILS_SAMPLE;$('#shopcard').hidden=ME!=='patne';
+  $('#drybtn').setAttribute('aria-pressed',!!mine.dry);
+  grid.innerHTML=COCKTAILS.map(c=>`<div class="card cocktail">${c.img?`<img class="cimg" src="${c.img}" alt="${esc(c.name)}" loading="lazy">`:''}<h3>${esc(c.name)}</h3><p class="small" style="letter-spacing:.06em;text-transform:uppercase;font-size:.75rem">${esc(c.tags||c.blurb||'')}</p>${c.ing?`<div class="ing">${esc(c.ing.join(' · '))}</div>`:''}<div class="seg"><button class="chip" data-cp="${c.id}" aria-pressed="${mine.picks.includes(c.id)}">I’d drink this</button><button class="chip" data-cf="${c.id}" aria-pressed="${mine.fav===c.id}">★ My favourite</button></div></div>`).join('');
+  const T=COCKTAILS.map(c=>{const who=Object.entries(cocktails).filter(([p,d])=>(d.picks||[]).includes(c.id)).map(([p])=>p),favs=Object.entries(cocktails).filter(([p,d])=>d.fav===c.id).map(([p])=>p);return{c,who,favs,score:favs.length*2+who.length}}).sort((a,b)=>b.score-a.score);
+  const voters=Object.keys(cocktails).length,dry=Object.values(cocktails).filter(d=>d.dry).length,mx=Math.max(1,...T.map(t=>t.who.length));
+  $('#cocktail-results').innerHTML=voters?`<div class="small" style="margin-bottom:8px">${voters} of 5 have picked${dry?`, ${dry} want an alcohol-free option`:''}.</div>`+T.map((t,i)=>`<div style="margin-bottom:8px"><div class="row" style="justify-content:space-between"><b>${i===0&&t.score?'👑 ':''}${esc(t.c.name)}</b><span class="small">${t.who.length} want it · ${t.favs.length} favourite${t.favs.length===1?'':'s'}</span></div><div class="bar-row" style="grid-template-columns:1fr 24px"><i style="width:${t.who.length/mx*100}%"></i><span>${t.who.length}</span></div><div class="dots">${t.who.map(dot).join('')}</div></div>`).join(''):'<p class="small">No picks yet. Be the first.</p>';
+  const pp=lsGet('cota.pp',4);$('#drinks').value=pp;
+  const est={};COCKTAILS.forEach(c=>est[c.id]=0);Object.values(cocktails).forEach(d=>{const ids=(d.picks||[]).filter(x=>est[x]!==undefined);if(!ids.length||d.dry&&!ids.length)return;const w=ids.map(x=>x===d.fav?2:1),tot=w.reduce((a,b)=>a+b,0);ids.forEach((x,i)=>est[x]+=pp*w[i]/tot)});
+  $('#cocktail-shop').innerHTML=T.filter(t=>t.who.length).map(t=>`<div class="bal" style="align-items:flex-start"><div><b>${esc(t.c.name)}</b><div class="small">${t.c.ing?esc(t.c.ing.join(', ')):''}</div></div><div class="lvl" style="font-size:1.6rem">${Math.round(est[t.c.id])}<span class="small"> drinks</span></div></div>`).join('')||'<p class="small">Nothing to buy yet.</p>'}
+document.addEventListener('click',e=>{
+  const p=e.target.closest('[data-cp]'),f=e.target.closest('[data-cf]'),d=e.target.closest('#drybtn');
+  if(!p&&!f&&!d)return;if(needMe())return;
+  const m=Object.assign({picks:[],fav:'',dry:false},cocktails[ME]||{});m.picks=[...m.picks];
+  if(p){const i=m.picks.indexOf(p.dataset.cp);if(i>-1){m.picks.splice(i,1);if(m.fav===p.dataset.cp)m.fav=''}else m.picks.push(p.dataset.cp)}
+  if(f){const id=f.dataset.cf;if(m.fav===id)m.fav='';else{m.fav=id;if(!m.picks.includes(id))m.picks.push(id)}}
+  if(d)m.dry=!m.dry;
+  m.ts=Date.now();Store.set('cocktails',ME,m)});
+document.addEventListener('change',e=>{if(e.target.id==='drinks'){lsSet('cota.pp',Math.max(1,+e.target.value||4));renderCocktails()}});
+Store.watch('cocktails',m=>{cocktails=m;renderCocktails();refreshXP()});
+
+/* ---------- photos + collage ---------- */
+const photoSrc=d=>d.local||Store.mode()!=='shared'?lsGet('cota.photo.'+d.person+'.'+d.slot,''):`/api/photo?person=${d.person}&slot=${d.slot}&v=${d.ts||0}`;
+function photoList(){return Object.values(photos).filter(d=>PID.includes(d.person)).sort((a,b)=>PID.indexOf(a.person)-PID.indexOf(b.person)||a.slot-b.slot)}
+function renderPhotos(){
+  const up=$('#upslots');if(up.tagName){up.innerHTML=[1,2].map(s=>{const d=photos[ME+'-'+s];return `<div class="upslot"><b>Photo ${s}</b>${d&&ME?`<img src="${photoSrc(d)}" alt="Your photo ${s}">`:''}<label class="btn alt" style="margin:0;cursor:pointer">${d&&ME?'Replace':'Choose a photo'}<input type="file" accept="image/*" data-up="${s}" hidden></label></div>`}).join('')}
+  $('#gallery').innerHTML=photoList().map((d,i)=>`<figure class="polaroid" style="--rot:${((i*37)%7-3)*.6}deg"><img src="${photoSrc(d)}" alt="${P[d.person].name}'s photo ${d.slot}" loading="lazy"><figcaption>${P[d.person].name}</figcaption></figure>`).join('')||'<p class="small">No photos yet.</p>';
+  drawCollage()}
+document.addEventListener('change',async e=>{const s=e.target.dataset.up;if(!s)return;const f=e.target.files[0];e.target.value='';if(!f)return;await uploadPhoto(f,+s)});
+function resizeImg(file,max){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(),'image/jpeg',.82)};img.onerror=()=>rej();img.src=u})}
+const blobURL=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+async function uploadPhoto(file,slot){if(needMe())return;toast('Uploading...');let blob;try{blob=await resizeImg(file,1400)}catch(x){toast('That image would not open');return}
+  if(Store.mode()==='shared'){try{const r=await fetch(`/api/photo?person=${ME}&slot=${slot}`,{method:'POST',headers:{'Content-Type':'image/jpeg'},body:blob});if(!r.ok)throw 0;await Store.set('photos',ME+'-'+slot,{person:ME,slot,ts:Date.now()});toast('Photo posted');return}catch(x){toast('Upload failed. Try again.');return}}
+  const url=await blobURL(blob);try{localStorage.setItem('cota.photo.'+ME+'.'+slot,JSON.stringify(url))}catch(x){toast('Phone storage is full');return}
+  await Store.set('photos',ME+'-'+slot,{person:ME,slot,ts:Date.now(),local:true});toast('Saved on this device')}
+Store.watch('photos',m=>{photos=m;renderPhotos();refreshXP()});
+function gridFor(n,W,H){let best=null;for(let cols=1;cols<=n;cols++){const rows=Math.ceil(n/cols),sc=Math.abs(Math.log((W/cols)/(H/rows)/1.15))+(cols*rows-n)*.09;if(!best||sc<best.sc)best={cols,rows,sc}}
+  const {cols,rows}=best,cw=W/cols,ch=H/rows,out=[];for(let r=0;r<rows;r++){const k=Math.min(cols,n-r*cols),off=(cols-k)*cw/2;for(let c=0;c<k;c++)out.push({x:off+c*cw,y:r*ch,w:cw,h:ch})}return out}
+
+async function drawCollage(){const cv=$('#collage');if(!cv.getContext)return;const tok=++collageTok,list=photoList();
+  try{await document.fonts.load('80px Bangers')}catch(x){}
+  const imgs=await Promise.all(list.map(d=>new Promise(r=>{const i=new Image();i.onload=()=>r({i,d});i.onerror=()=>r(null);i.src=photoSrc(d)}))).then(a=>a.filter(Boolean));
+  if(tok!==collageTok)return;
+  const W=1600,HB=imgs.length<=2?760:imgs.length<=4?1000:1150,HT=210,ctx=cv.getContext('2d');cv.width=W;cv.height=HT+HB+40;
+  ctx.fillStyle='#FFF3D6';ctx.fillRect(0,0,W,cv.height);ctx.fillStyle='rgba(191,87,0,.16)';for(let y=14;y<cv.height;y+=44)for(let x=14;x<W;x+=44){ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.fill()}
+  ctx.fillStyle='#1F4BA8';ctx.fillRect(0,0,W/3,26);ctx.fillStyle='#FFFDF6';ctx.fillRect(W/3,0,W/3,26);ctx.fillStyle='#D7263D';ctx.fillRect(2*W/3,0,W/3,26);ctx.fillStyle='#2A1608';ctx.fillRect(0,26,W,6);
+  ctx.textAlign='center';ctx.lineJoin='round';ctx.font='130px Bangers, Impact, sans-serif';ctx.lineWidth=14;ctx.strokeStyle='#2A1608';ctx.strokeText('TEXAS × F1 2026',W/2,150);ctx.fillStyle='#F28A1B';ctx.fillText('TEXAS × F1 2026',W/2,150);
+  ctx.font='42px Bangers, Impact, sans-serif';ctx.fillStyle='#2A1608';ctx.fillText('US GRAND PRIX · AUSTIN · OCT 22–27',W/2,200);
+  if(!imgs.length){ctx.font='60px Bangers, Impact, sans-serif';ctx.fillText('Photos will appear here',W/2,HT+HB/2);return}
+  const cells=gridFor(imgs.length,W-60,HB);
+  imgs.forEach((m,i)=>{const c=cells[i],pad=22,x=30+c.x+pad,y=HT+c.y+pad,w=c.w-pad*2,h=c.h-pad*2,cap=46,ang=(((i*37)%7)-3)*.012;
+    ctx.save();ctx.translate(x+w/2,y+h/2);ctx.rotate(ang);ctx.fillStyle='#2A1608';ctx.fillRect(-w/2+9,-h/2+9,w,h);ctx.fillStyle='#fff';ctx.fillRect(-w/2,-h/2,w,h);ctx.lineWidth=5;ctx.strokeStyle='#2A1608';ctx.strokeRect(-w/2,-h/2,w,h);
+    const iw=w-24,ih=h-24-cap,sc=Math.max(iw/m.i.width,ih/m.i.height),sw=iw/sc,sh=ih/sc;ctx.drawImage(m.i,(m.i.width-sw)/2,(m.i.height-sh)/2,sw,sh,-w/2+12,-h/2+12,iw,ih);ctx.strokeRect(-w/2+12,-h/2+12,iw,ih);
+    ctx.fillStyle='#2A1608';ctx.font='34px Bangers, Impact, sans-serif';ctx.textAlign='center';ctx.fillText(P[m.d.person].name,0,h/2-14);ctx.restore()})}
+document.addEventListener('click',e=>{if(e.target.id!=='dl')return;const cv=$('#collage');cv.toBlob(b=>{if(!b){toast('Could not make the image');return}const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='texas-f1-collage.png';document.body.appendChild(a);a.click();a.remove();toast('Collage downloaded')},'image/png')});
 
 /* ---------- boot ---------- */
-function rerenderAll(){renderSchedule();renderMenu();renderPreds();renderAwards();renderJournal()}
-renderSchedule();renderCrew();renderHost();renderGear();renderBingo();nowNext();openItems();tick();
-setInterval(()=>{tick();nowNext()},30000);
+function rerenderAll(){renderSchedule();renderMenu();renderPreds();renderAwards();renderJournal();renderPack();renderBingo();renderCocktails();renderPhotos();renderNotes();prefillFrom();refreshXP()}
+renderSchedule();renderCrew();renderHost();nowNext();openItems();tick();prefillFrom();refreshXP();
+setInterval(tick,1000);setInterval(nowNext,30000);
 })();

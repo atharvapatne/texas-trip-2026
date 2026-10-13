@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Photos | Texas F1</title>
+<meta name="description" content="Post your two best photos and build the collage.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23BF5700' stroke='%232A1608' stroke-width='1.5' d='M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Baloo+2:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="photos">
+<header class="top">
+  <div class="flag" aria-hidden="true" style="margin:-8px -16px 8px"></div>
+  <div class="bar">
+    <a class="brand" href="index.html"><svg class="lh" viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c1 9 7 11 13 9M37 11c-1 9-7 11-13 9" stroke="#2A1608" stroke-width="7"/><path d="M3 11c1 9 7 11 13 9M37 11c-1 9-7 11-13 9" stroke="#FFFDF6" stroke-width="3"/></g><path d="M12 17h16l-2 14c-1 4-11 4-12 0z" fill="#BF5700" stroke="#2A1608" stroke-width="3" stroke-linejoin="round"/><circle cx="16.5" cy="23" r="1.6" fill="#2A1608"/><circle cx="23.5" cy="23" r="1.6" fill="#2A1608"/><path d="M33 3l1.2 2.7 2.8.3-2.1 1.9.6 2.8-2.5-1.5-2.5 1.5.6-2.8-2.1-1.9 2.8-.3z" fill="#FFC933" stroke="#2A1608" stroke-width="1"/></svg>Texas × F1</a>
+    <div class="tools">
+      <a class="xp" id="xp" href="leaderboard.html">Pick your driver →</a>
+      <select class="who" id="me" aria-label="Who are you?"></select>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Pages"></nav>
+</header>
+<main class="wrap">
+<section class="view">
+  <div><div class="eyebrow">After the weekend</div><h2>Photo Finish</h2>
+    <p class="lede" style="margin-top:6px">Everyone posts their 2 favourite photos from the trip. The collage builds itself. Patne downloads it the day after and emails it to the crew. +10 pts per photo.</p></div>
+  <div class="card"><h3>Your 2 best shots</h3><div class="grid" id="upslots" style="margin-top:10px"></div>
+    <p class="small" style="margin-top:8px">Photos are shrunk to fit. If the shared board is off, they stay on this phone only.</p></div>
+  <div class="card"><div class="row" style="justify-content:space-between"><h3>The collage</h3><button class="btn red" id="dl">Download image</button></div>
+    <div style="margin-top:12px"><canvas id="collage" class="collage" width="1600" height="900"></canvas></div></div>
+  <div><h3 style="margin-bottom:10px">Everyone's photos</h3><div class="photo-grid" id="gallery"></div></div>
+</section>
+<div class="foot"><span class="mode" id="mode"></span><span class="small">Made with love in Oak Hill, Texas</span></div>
+</main>
+<div class="toast" id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Food & Texas | Texas F1</title>
 <meta name="description" content="BBQ, cocktails and the home-cooked lunch.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23C8321F' d='M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23BF5700' stroke='%232A1608' stroke-width='1.5' d='M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Baloo+2:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="texas">
-<div class="flag" aria-hidden="true"></div>
 <header class="top">
+  <div class="flag" aria-hidden="true" style="margin:-8px -16px 8px"></div>
   <div class="bar">
-    <a class="brand" href="index.html"><svg class="star" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l3 7.3 7.9.6-6 5.1 1.9 7.7L12 18l-6.8 4.2 1.9-7.7-6-5.1 7.9-.6z"/></svg>Texas × F1</a>
+    <a class="brand" href="index.html"><svg class="lh" viewBox="0 0 40 40" aria-hidden="true"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11c1 9 7 11 13 9M37 11c-1 9-7 11-13 9" stroke="#2A1608" stroke-width="7"/><path d="M3 11c1 9 7 11 13 9M37 11c-1 9-7 11-13 9" stroke="#FFFDF6" stroke-width="3"/></g><path d="M12 17h16l-2 14c-1 4-11 4-12 0z" fill="#BF5700" stroke="#2A1608" stroke-width="3" stroke-linejoin="round"/><circle cx="16.5" cy="23" r="1.6" fill="#2A1608"/><circle cx="23.5" cy="23" r="1.6" fill="#2A1608"/><path d="M33 3l1.2 2.7 2.8.3-2.1 1.9.6 2.8-2.5-1.5-2.5 1.5.6-2.8-2.1-1.9 2.8-.3z" fill="#FFC933" stroke="#2A1608" stroke-width="1"/></svg>Texas × F1</a>
     <div class="tools">
+      <a class="xp" id="xp" href="leaderboard.html">Pick your driver →</a>
       <select class="who" id="me" aria-label="Who are you?"></select>
-      <button class="icon-btn" id="theme" aria-label="Toggle light or dark"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/></svg></button>
     </div>
   </div>
   <nav class="tabs" id="tabs" aria-label="Pages"></nav>
@@ -28,14 +28,14 @@
     <p class="lede" style="margin-top:6px">Budget about $25–30 a meal, under the $35–40 cap. COTA is cashless and no outside food gets in, so breakfast is at home.</p></div>
   <div class="grid" id="texgrid"></div>
   <div class="card"><h3>Saturday home-cooked lunch</h3>
-    <p style="margin-top:6px">Lunch at 1:00 pm at home for all five, right after Ambika arrives, and out the door for COTA by 1:45 pm. Prep starts at 9:45 am so the pot is simmering before Chaitrali leaves for the bus stop at 11:30.</p>
+    <p style="margin-top:6px">Lunch at 1:00 pm at home for all five, right after Ambika arrives, and out the door for COTA by 1:45 pm. Prep starts at 9:45 am so the pot is simmering before Patne leaves for the bus stop at 11:30.</p>
     <p class="small" style="margin-top:6px">Menu is open. An easy fit is one big pot (biryani or pulao with raita) plus a separate egg dish, since Hetvi and Anu do not eat eggs, so nobody cooks while the clock runs. Vote below.</p>
     <div class="seg" id="menuvote" style="margin-top:10px"></div></div>
   <div class="card"><h3>Meal plan</h3>
     <div class="scroll"><table><thead><tr><th>When</th><th>What</th><th>Who</th></tr></thead><tbody>
-      <tr><td>Thu dinner</td><td>Home</td><td>Chaitrali</td></tr>
-      <tr><td>Fri lunch</td><td>Terry Black's BBQ, 1003 Barton Springs Rd, about 11:45 am</td><td>Chaitrali, Tanmay</td></tr>
-      <tr><td>Fri dinner</td><td>COTA stands, veg stand for Hetvi</td><td>Chaitrali, Tanmay, Hetvi</td></tr>
+      <tr><td>Thu dinner</td><td>Home</td><td>Patne</td></tr>
+      <tr><td>Fri lunch</td><td>Terry Black's BBQ, 1003 Barton Springs Rd, about 11:45 am</td><td>Patne, Tanmay</td></tr>
+      <tr><td>Fri dinner</td><td>COTA stands, veg stand for Hetvi</td><td>Patne, Tanmay, Hetvi</td></tr>
       <tr><td>Sat lunch</td><td><b>Home-cooked</b></td><td>All five</td></tr>
       <tr><td>Sat dinner</td><td>COTA stands before Post Malone</td><td>All</td></tr>
       <tr><td>Sat night</td><td>Cocktail night at home</td><td>All</td></tr>
@@ -43,12 +43,13 @@
       <tr><td>Sun lunch</td><td>COTA, before 11:30 am or after 1:30 pm</td><td>All</td></tr>
       <tr><td>Sun 5–5:30 pm</td><td>Real meal at COTA while the first wave leaves. Powder Room is cocktails and small plates.</td><td>All (Anu leaves about 7 pm)</td></tr>
       <tr><td>Sun 8 pm</td><td>Powder Room, 301 W 5th St</td><td>All</td></tr>
-      <tr><td>Mon dinner</td><td>The Oasis on Lake Travis, early, from about 5:20 pm</td><td>Chaitrali, Tanmay</td></tr>
+      <tr><td>Mon dinner</td><td>The Oasis on Lake Travis, early, from about 5:20 pm</td><td>Patne, Tanmay</td></tr>
     </tbody></table></div></div>
   <div class="card plain"><h3>If there is time</h3><ul class="small" style="margin:8px 0 0;padding-left:18px">
     <li>Broken Spoke, 3201 S Lamar: two-step lessons 8–9 pm, $10 cash each. Only fits if Tanmay lands before ~6:30 pm Thursday.</li>
     <li>Allens Boots, 1522 S Congress, and the murals. This got squeezed out by the cooking morning.</li></ul></div>
 </section>
+<div class="foot"><span class="mode" id="mode"></span><span class="small">Made with love in Oak Hill, Texas</span></div>
 </main>
 <div class="toast" id="toast" hidden></div>
 <script src="app.js"></script>

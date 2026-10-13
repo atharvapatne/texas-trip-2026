@@ -1,22 +1,19 @@
-# Texas F1 trip site
+# Texas x F1 trip site (toon edition)
 
-Plain HTML, CSS and JS. Eight pages: index, schedule, crew, info, cota, texas, play, after.
+Plain HTML, CSS and JS. Pages: index, schedule, crew, info, cota, texas, cocktails, play, photos, leaderboard, after.
 
-## Two ways to put it on Netlify
+## Update the site (easiest)
+Unzip, then upload EVERYTHING in this folder again, replacing the old files.
+- Drag and drop: Netlify > your site > Deploys > drag the whole unzipped folder onto the deploy box.
+- GitHub: open your repo > Add file > Upload files > drop everything from this folder > Commit.
 
-**A. Quickest (drag and drop).** Go to app.netlify.com/drop and drop this folder. Everything works, but the
-interactive parts (votes, journals, flight details) are saved on each person's own phone only.
-Journal posts are also sent to Netlify Forms, so you can read them in Site > Forms.
+## Things you can change
+- hero.jpg: add a wide landscape photo with this exact name next to index.html and it replaces the cartoon car on the home page.
+- cocktails.js: your cocktail menu (4 drinks). Photos are in the img folder; swap a file with the same name to change one.
+- app.js: the TRIP block near the top has address, phone, plate and Wi-Fi.
 
-**B. Shared board (everyone sees the same votes, journals and flight details).** Deploy with Git or the CLI so the
-function in `netlify/functions/trip.mjs` is built:
-1. Push this folder to a GitHub repo, then in Netlify choose "Add new site > Import from Git". No build command needed.
-   Or: `npm i -g netlify-cli && npm i && netlify deploy --prod`.
-2. Open the site. The pill on the Crew and After pages changes from "Saved on this device only" to "Shared board on".
-
+## Shared board
+Votes, quests, photos and notes are shared between phones only if the site is deployed from GitHub (so the function in
+netlify/functions/trip.mjs is built). Drag-and-drop deploys still work, but each phone then keeps its own data.
+Host notes and journal posts are also sent to Netlify Forms (Site > Forms).
 Anyone with the link can write to the board, so only share the link with the group.
-
-## Things to fill in
-- Host details: your address, phone and plate are already in the `TRIP` block near the top of app.js. Add wifi and note there and redeploy. Everyone then sees them even without the shared board. 
-- Flight and bus details: each person taps Edit on the Crew page.
-- Schedule: edit the `EV` list near the top of app.js.
