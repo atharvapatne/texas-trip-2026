@@ -1,10 +1,8 @@
 (function(){
 'use strict';
-const PEOPLE=[
- {id:'patne',name:'Patne',ab:'Pa',c:'pc1'},{id:'tanmay',name:'Tanmay',ab:'Ta',c:'pc2'},
- {id:'hetvi',name:'Hetvi',ab:'He',c:'pc3'},{id:'ambika',name:'Ambika',ab:'Am',c:'pc4'},{id:'anu',name:'Anu',ab:'An',c:'pc5'}];
+const PEOPLE=[{id:'patne',name:'Patne',full:'Atharva Patne',ab:'AP',c:'pc1'},{id:'tanmay',name:'Tanmay',full:'Tanmay Dighe',ab:'TD',c:'pc2'},{id:'hetvi',name:'Hetvi',full:'Hetvi Rajani',ab:'HR',c:'pc3'},{id:'ambika',name:'Ambika',full:'Ambika Varma',ab:'AV',c:'pc4'},{id:'anu',name:'Anu',full:'Anukriti Yadav',ab:'AY',c:'pc5'}];
 const PID=PEOPLE.map(p=>p.id), P=Object.fromEntries(PEOPLE.map(p=>[p.id,p]));
-let legs={},menu={},preds={},awards={},songs={},jr={},cocktails={},photos={},notes={},bonus={},prog={},lastTotal=null,lastLevel=null,acted=0,collageTok=0;
+let legs={},menu={},preds={},awards={},songs={},jr={},cocktails={},profiles={},photos={},notes={},bonus={},prog={},lastTotal=null,lastLevel=null,acted=0,collageTok=0;
 const SH={c:'patne',t:'tanmay',h:'hetvi',a:'ambika',n:'anu'};
 const $=(s,r=document)=>r.querySelector(s)||document.createElement('div'), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -39,10 +37,11 @@ const QUESTS=[
  {id:'bingo',label:'Play Texas bingo',max:35,to:'play.html',calc:p=>{const b=(prog[p]||{}).bingo||{};return Math.min(35,cnt(b)+bingoLines(b)*5)}},
  {id:'songs',label:'Add songs to the playlist',max:15,to:'play.html',calc:p=>Math.min(3,Object.values(songs).filter(s=>s.by===p).length)*5},
  {id:'photos',label:'Post your 2 best photos',max:20,to:'photos.html',calc:p=>[1,2].filter(s=>photos[p+'-'+s]).length*10},
- {id:'note',label:'Leave a note for the host',max:5,to:'index.html',calc:p=>Object.values(notes).some(n=>n.by===p)?5:0},
+ {id:'note',label:'Leave a note for the host',max:5,to:'home.html',calc:p=>Object.values(notes).some(n=>n.by===p)?5:0},
+ {id:'profile',label:'Fill in your driver card (favourite driver + who you are)',max:25,to:'home.html',calc:p=>{const d=profiles[p]||{};return (d.fav?5:0)+(((d.bio||'').trim().length>=15)?20:0)}},
  {id:'journal',label:'Write your trip page',max:25,to:'after.html',calc:p=>(jr[p]&&jr[p].ts)?25:0}];
 function score(p){const rows=QUESTS.map(q=>({id:q.id,label:q.label,to:q.to,max:q.max,pts:Math.min(q.max,q.calc(p))}));const bn=(bonus[p]||{}).pts||0;return{rows,bonus:bn,total:rows.reduce((a,r)=>a+r.pts,0)+bn}}
-const BADGES=[['travel','Navigator'],['cocktail','Bar Regular'],['pack','Packed & Ready'],['predict','Fortune Teller'],['bingo','Bingo Hunter'],['photos','Shutterbug'],['journal','Storyteller'],['songs','DJ'],['note','Chatterbox']];
+const BADGES=[['travel','Navigator'],['cocktail','Bar Regular'],['pack','Packed & Ready'],['predict','Fortune Teller'],['bingo','Bingo Hunter'],['photos','Shutterbug'],['journal','Storyteller'],['songs','DJ'],['note','Chatterbox'],['profile','Main Character']];
 const badgesOf=s=>BADGES.filter(b=>{const r=s.rows.find(x=>x.id===b[0]);return r&&r.pts>0&&(b[0]!=='pack'||r.pts>=r.max)&&(b[0]!=='photos'||r.pts>=r.max)}).map(b=>b[1]);
 
 /* ---------- me ---------- */
@@ -130,9 +129,9 @@ S(25,'15:00','RACE: 56 laps','','all','cota'),
 S(25,'17:00','Chequered flag and trophy ceremony','Stay put 30\u201345 min. Buy a proper meal here: Powder Room serves cocktails and small plates.','all','food'),
 S(25,'17:45','Walk to the car','15\u201330 min depending on the lot.','all','travel'),
 S(25,'19:00','Anu leaves with her boyfriend (TBC)','He picks her up from COTA. Agree a meeting point and share locations, since he will hit the same exit traffic. She carries her bag with her.','n','tbd'),
-S(25,'19:30','Out of the lot (target)','Exit takes 60\u2013120 min. Call Powder Room if you are running late.','cth','travel'),
-S(25,'20:00','Cocktails at Powder Room (booked)','301 W 5th St, downtown. About 25 min from COTA, so 8:00 is tight. Ask them to hold the table until 8:45 or move it to 9:00. The driver stays sober.','cth','tbd'),
-S(25,'22:30','Head home','Hetvi\u2019s alarm is 2:45 am.','cth','travel'),
+S(25,'19:30','Out of the lot (target)','Exit takes 60\u2013120 min. Call Powder Room if you are running late.','ctha','travel'),
+S(25,'20:00','Cocktails at Powder Room (booked)','301 W 5th St, downtown. About 25 min from COTA, so 8:00 is tight. Ask them to hold the table until 8:45 or move it to 9:00. The driver stays sober.','ctha','tbd'),
+S(25,'22:30','Head home','Hetvi\u2019s alarm is 2:45 am.','ctha','travel'),
 S(26,'02:45','Hetvi up, Tanmay drives her at 3:00 am','Flight 5:30 am, at the airport by 3:30. Patne sleeps.','th','travel'),
 S(26,'07:15','Patne and Tanmay leave for Bee Cave','Tanmay drops her at the office and takes the car back.','ct','travel'),
 S(26,'08:00','Patne at work','Until 4:30 pm.','c','work'),
@@ -149,7 +148,7 @@ const dayLabel=d=>{const x=DAYS.find(y=>y.d===d);return x?x.s+' Oct '+x.n:d};
 const hm=t=>{let [h,m]=t.split(':').map(Number);const ap=h>=12?'pm':'am';h=h%12||12;return h+':'+String(m).padStart(2,'0')+' '+ap};
 function nowCT(){const p={};new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return p.year+'-'+p.month+'-'+p.day+' '+(p.hour==='24'?'00':p.hour)+':'+p.minute}
 /* ---------- nav (one HTML file per page) ---------- */
-const VIEWS=[['index','Home','Countdown, quests, note to the host'],['schedule','Schedule','Day by day, filter by person'],['crew','Crew','Flights, buses, pickups'],['info','Pack & Info','Address, Wi-Fi, what to bring'],['cota','COTA','Map, timetable, rules'],['texas','Food & Texas','BBQ, cocktails, the home-cooked lunch'],['cocktails','Cocktails','Pick your drinks for cocktail night'],['play','Play','Predictions, awards, bingo, playlist'],['photos','Photos','Post 2 photos, build the collage'],['leaderboard','Standings','Championship leaderboard'],['after','After','Write how the trip went']];
+const VIEWS=[['home','Home','Countdown, quests, note to the host'],['schedule','Schedule','Day by day, filter by person'],['crew','Crew','Flights, buses, pickups'],['info','Pack & Info','Address, Wi-Fi, what to bring'],['cota','COTA','Map, timetable, rules'],['texas','Food & Texas','BBQ, cocktails, the home-cooked lunch'],['cocktails','Cocktails','Pick your drinks for cocktail night'],['play','Play','Predictions, awards, bingo, playlist'],['photos','Photos','Post 2 photos, build the collage'],['leaderboard','Standings','Championship leaderboard'],['after','After','Write how the trip went']];
 const PAGE=document.body.dataset.page||'index';
 $('#tabs').innerHTML=VIEWS.map(v=>`<a href="${v[0]}.html"${v[0]===PAGE?' aria-current="page"':''}>${v[1]}</a>`).join('');
 $('#navgrid').innerHTML=VIEWS.slice(1).map(v=>`<a href="${v[0]}.html"><div class="card"><h3>${v[1]}</h3><p>${v[2]}</p></div></a>`).join('');
@@ -193,8 +192,8 @@ const LEGS={
 let editLeg='';
 function renderCrew(){
   $('#crewgrid').innerHTML=PEOPLE.map(p=>{
-    if(p.id==='patne')return `<div class="card person"><header>${dot(p.id)}<div><h3>${p.name}</h3><span class="small">Host</span></div></header><p class="small">Home base in Oak Hill. Drives the Mazda CX-5 on COTA days. Works 8–4:30 in Bee Cave on Thu, Mon and Tue.</p></div>`;
-    return `<div class="card person"><header>${dot(p.id)}<div><h3>${p.name}</h3><span class="small">Guest</span></div></header>${LEGS[p.id].map(L=>{
+    if(p.id==='patne')return `<div class="card person"><header>${dot(p.id)}<div><h3>${p.name}</h3><span class="small">Host</span></div></header>${profLine(p.id)}<p class="small">Home base in Oak Hill. Drives the Mazda CX-5 on COTA days. Works 8–4:30 in Bee Cave on Thu, Mon and Tue.</p></div>`;
+    return `<div class="card person"><header>${dot(p.id)}<div><h3>${p.name}</h3><span class="small">Guest</span></div></header>${profLine(p.id)}${LEGS[p.id].map(L=>{
       const id=p.id+'-'+L[0],sv=legs[id]||{},when=sv.time||L[3],where=sv.where||'',ref=sv.ref||'',note=sv.note||L[5];
       if(editLeg===id)return `<div class="leg" data-leg="${id}"><div class="lh"><b>${L[1]} · ${L[2]}</b></div><div class="stack" style="margin-top:6px"><div><label>${L[4]==='Flight'||L[4]==='Bus'?L[4]+' number':'Name or car'}</label><input type="text" data-k="ref" value="${esc(ref)}" placeholder="e.g. AA 1234"></div><div><label>Time</label><input type="text" data-k="time" value="${esc(sv.time||'')}" placeholder="${esc(L[3])}"></div><div><label>${L[4]==='Flight'?'Terminal or airline':'Pickup or stop'}</label><input type="text" data-k="where" value="${esc(where)}"></div><div><label>Notes</label><input type="text" data-k="note" value="${esc(sv.note||'')}" placeholder="${esc(L[5])}"></div><div class="row"><button class="btn" data-save="${id}">Save</button><button class="btn alt" data-cancel="1">Cancel</button></div></div></div>`;
       return `<div class="leg"><div class="lh"><b>${L[1]} · ${L[2]}</b><button class="chip" data-edit="${id}">Edit</button></div><div class="big">${esc(when)}</div><div class="small">${L[4]}${ref?': '+esc(ref):''}${where?' · '+esc(where):''}</div><div class="small" style="margin-top:2px">${esc(note)}</div></div>`}).join('')}</div>`}).join('');
@@ -228,7 +227,8 @@ const TEX=[
  ['Sat 11:30 pm','Cocktail night at home','Short nightcap after Post Malone. All five.',null,'fun'],
  ['Sun 8:00 pm','Powder Room','301 W 5th St, downtown. Cocktails booked for the group.','Powder Room 301 W 5th St Austin','fun'],
  ['Mon 5:20 pm','The Oasis on Lake Travis','Early dinner on the deck, 6550 Comanche Trail, before Tanmay\u2019s 9 pm flight. Sunset is 6:50, so the bell is missed unless his flight is later.','The Oasis on Lake Travis 6550 Comanche Trail Austin','fun']];
-$('#texgrid').innerHTML=TEX.map(t=>`<div class="card stack"><div class="row" style="justify-content:space-between"><span class="eyebrow">${t[0]}</span><span class="tag t-${t[4]}">${TAGN[t[4]]}</span></div><h3>${t[1]}</h3><p class="small">${t[2]}</p>${t[3]?`<a class="small" href="${maps(t[3])}" target="_blank" rel="noopener">Open in Maps</a>`:''}</div>`).join('');
+const TEXWHO=[['patne','tanmay'],['patne','tanmay'],PID,PID,PID,['patne','tanmay','hetvi','ambika'],['patne','tanmay']];
+$('#texgrid').innerHTML=TEX.map((t,i)=>`<div class="card stack"><div class="row" style="justify-content:space-between"><span class="eyebrow">${t[0]}</span><span class="tag t-${t[4]}">${TAGN[t[4]]}</span></div><h3>${t[1]}</h3><p class="small">${t[2]}</p>${t[3]?`<a class="small" href="${maps(t[3])}" target="_blank" rel="noopener">Open in Maps</a>`:''}<div class="dots" style="margin-top:2px">${TEXWHO[i].map(dot).join('')}</div></div>`).join('');
 const MENU=['Biryani + raita','Pulao + raita','Dal, rice and sabzi','Tex-Mex night','Patne decides'];
 function renderMenu(){const cnt={};Object.values(menu).forEach(v=>cnt[v.choice]=(cnt[v.choice]||0)+1);
   $('#menuvote').innerHTML=MENU.map(m=>`<button class="chip" data-menu="${esc(m)}" aria-pressed="${ME&&menu[ME]&&menu[ME].choice===m}">${m} · ${cnt[m]||0}</button>`).join('')}
@@ -301,7 +301,7 @@ function renderPit(){const box=$('#xpcard');if(!ME){box.innerHTML='<div class="r
 function standings(){return PEOPLE.map(p=>({p,s:score(p.id)})).sort((a,b)=>b.s.total-a.s.total||a.p.name.localeCompare(b.p.name))}
 function renderBoard(){const st=standings();
   $('#podium').innerHTML=[st[1],st[0],st[2]].map((x,i)=>{const pos=[2,1,3][i];return `<div class="st p${pos}"><div class="pos">P${pos}</div>${dot(x.p.id)}<div class="nm">${x.p.name}</div><div class="pt">${x.s.total}</div></div>`}).join('');
-  const html=st.map((x,i)=>`<div class="row-board"><div class="p">${i+1}</div><div><div class="row" style="gap:8px">${dot(x.p.id)}<b>${x.p.name}</b><span class="pill">${levelOf(x.s.total).name}</span></div><div>${badgesOf(x.s).map(b=>`<span class="badge">${b}</span>`).join('')}</div></div><div class="tp">${x.s.total}</div></div>`).join('');
+  const html=st.map((x,i)=>`<div class="row-board"><div class="p">${i+1}</div><div><div class="row" style="gap:8px">${dot(x.p.id)}<b>${x.p.name}</b><span class="pill">${levelOf(x.s.total).name}</span></div>${(profiles[x.p.id]||{}).fav?`<div class="small">♥ ${esc(profiles[x.p.id].fav)}</div>`:''}<div>${badgesOf(x.s).map(b=>`<span class="badge">${b}</span>`).join('')}</div></div><div class="tp">${x.s.total}</div></div>`).join('');
   $('#board').innerHTML=html;
   $('#miniboard').innerHTML=st.map((x,i)=>`<div class="row-board" style="padding:6px 0"><div class="p" style="font-size:1.5rem">${i+1}</div><div class="row" style="gap:8px">${dot(x.p.id)}<b>${x.p.name}</b></div><div class="tp" style="font-size:1.4rem">${x.s.total}</div></div>`).join('');
   $('#rules').innerHTML='<table><thead><tr><th>Quest</th><th>Max points</th></tr></thead><tbody>'+QUESTS.map(q=>`<tr><td><a href="${q.to}">${q.label}</a></td><td>${q.max}</td></tr>`).join('')+'<tr><td>Host bonus (Patne awards for race calls, best two-step, etc.)</td><td>any</td></tr></tbody></table>';
@@ -380,6 +380,16 @@ async function drawCollage(){const cv=$('#collage');if(!cv.getContext)return;con
     const iw=w-24,ih=h-24-cap,sc=Math.max(iw/m.i.width,ih/m.i.height),sw=iw/sc,sh=ih/sc;ctx.drawImage(m.i,(m.i.width-sw)/2,(m.i.height-sh)/2,sw,sh,-w/2+12,-h/2+12,iw,ih);ctx.strokeRect(-w/2+12,-h/2+12,iw,ih);
     ctx.fillStyle='#2A1608';ctx.font='34px Bangers, Impact, sans-serif';ctx.textAlign='center';ctx.fillText(P[m.d.person].name,0,h/2-14);ctx.restore()})}
 document.addEventListener('click',e=>{if(e.target.id!=='dl')return;const cv=$('#collage');cv.toBlob(b=>{if(!b){toast('Could not make the image');return}const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='texas-f1-collage.png';document.body.appendChild(a);a.click();a.remove();toast('Collage downloaded')},'image/png')});
+
+/* ---------- driver card: favourite F1 driver + bio ---------- */
+const DRIVERS=[['McLaren',['Lando Norris','Oscar Piastri']],['Mercedes',['George Russell','Kimi Antonelli']],['Red Bull',['Max Verstappen','Isack Hadjar']],['Ferrari',['Charles Leclerc','Lewis Hamilton']],['Williams',['Alex Albon','Carlos Sainz']],['Racing Bulls',['Liam Lawson','Arvid Lindblad']],['Aston Martin',['Fernando Alonso','Lance Stroll']],['Haas',['Esteban Ocon','Oliver Bearman']],['Audi',['Nico Hülkenberg','Gabriel Bortoleto']],['Alpine',['Pierre Gasly','Franco Colapinto']],['Cadillac',['Valtteri Bottas','Sergio Pérez']]];
+function profLine(id){const d=profiles[id]||{};if(!d.fav&&!d.bio)return '';return `<div class="small" style="color:var(--ink)">${d.fav?`<b>Favourite driver:</b> ${esc(d.fav)}`:''}${d.bio?`<div style="margin-top:3px">${esc(d.bio)}</div>`:''}</div>`}
+function renderProfile(){const box=$('#profilecard');if(!box.tagName||!document.getElementById('profilecard'))return;
+  if(!ME){box.innerHTML='';return}
+  const d=profiles[ME]||{};
+  box.innerHTML=`<div class="row" style="justify-content:space-between"><h3>${P[ME].name}’s driver card</h3><span class="pill">${(d.fav?5:0)+(((d.bio||'').trim().length>=15)?20:0)}/25 pts</span></div><p class="small" style="margin:4px 0 10px">Tell the crew who you are and what you like. Everyone sees it on the Crew page. +25 pts.</p><div class="stack"><div><label for="pf-fav">Favourite F1 driver (+5)</label><select class="f" id="pf-fav"><option value="">Pick one</option>${DRIVERS.map(t=>`<optgroup label="${t[0]}">${t[1].map(n=>`<option ${d.fav===n?'selected':''}>${n}</option>`).join('')}</optgroup>`).join('')}<option ${d.fav==='Someone else'?'selected':''}>Someone else</option></select></div><div><label for="pf-bio">Who are you and what do you like? (+20)</label><textarea id="pf-bio" placeholder="Hi, I’m ... I love ... (a couple of sentences)">${esc(d.bio||'')}</textarea></div><div><button class="btn" id="pf-save">Save my card</button></div></div><p class="small" style="margin-top:8px">Grid shown is the 2026 start-of-season line-up.</p>`}
+document.addEventListener('click',async e=>{if(e.target.id!=='pf-save')return;if(needMe())return;await Store.set('profiles',ME,{fav:$('#pf-fav').value,bio:$('#pf-bio').value.trim(),ts:Date.now()});toast('Card saved')});
+Store.watch('profiles',m=>{profiles=m;renderProfile();renderCrew();renderBoard();refreshXP()});
 
 /* ---------- boot ---------- */
 function rerenderAll(){renderSchedule();renderMenu();renderPreds();renderAwards();renderJournal();renderPack();renderBingo();renderCocktails();renderPhotos();renderNotes();prefillFrom();refreshXP()}

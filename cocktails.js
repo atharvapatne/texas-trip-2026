@@ -5,8 +5,8 @@
 ------------------------------------------------------------------- */
 window.COCKTAILS_SAMPLE = false;
 window.COCKTAILS = [
-  {id:'jager',    name:'Jäger Mule',               tags:'Herbal · Spicy · Refreshing',        img:'img/jager.jpg',    ing:['Jägermeister','Fresh lime juice','Ginger beer','Mint']},
-  {id:'kokam',    name:'Kokam Ruby',               tags:'Tangy · Refreshing · Vibrant',       img:'img/kokam.jpg',    ing:['Vodka','Kokam syrup','Lime','Sparkling water']},
-  {id:'cucumber', name:'Cucumber Jalapeño Martini',tags:'Botanical · Crisp · Gently spicy',   img:'img/cucumber.jpg', ing:['Vodka','Dry vermouth','Cucumber','Jalapeño','Lime']},
-  {id:'tamarind', name:'Tamarind Afterburn',       tags:'Sweet · Tangy · Smoky',              img:'img/tamarind.jpg', ing:['Vodka','Tamarind','Lime','Smoked chili salt']}
+  {id:'jager',    name:'Jäger Mule',               tags:'Herbal · Spicy · Refreshing',        img:'drink-jager.jpg',    ing:['Jägermeister','Fresh lime juice','Ginger beer','Mint']},
+  {id:'kokam',    name:'Kokam Ruby',               tags:'Tangy · Refreshing · Vibrant',       img:'drink-kokam.jpg',    ing:['Vodka','Kokam syrup','Lime','Sparkling water']},
+  {id:'cucumber', name:'Cucumber Jalapeño Martini',tags:'Botanical · Crisp · Gently spicy',   img:'drink-cucumber.jpg', ing:['Vodka','Dry vermouth','Cucumber','Jalapeño','Lime']},
+  {id:'tamarind', name:'Tamarind Afterburn',       tags:'Sweet · Tangy · Smoky',              img:'drink-tamarind.jpg', ing:['Vodka','Tamarind','Lime','Smoked chili salt']}
 ];
